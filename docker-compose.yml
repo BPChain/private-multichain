@@ -1,15 +1,14 @@
 version: '2'
-services: 
-    masternode: 
+services:
+    masternode:
       build: .
       stdin_open: true
       tty: true
       entrypoint: /masterEntry.sh
-    slavenode: 
+    slavenode:
       build: .
-      links: 
+      links:
         - masternode
       stdin_open: true
       tty: true
       entrypoint: /slaveEntry.sh
-
