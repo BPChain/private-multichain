@@ -1,0 +1,7 @@
+version: '2'
+services: 
+    masternode: 
+        build: .
+        entrypoint: /e.sh
+        stdin_open: true
+        tty: true
