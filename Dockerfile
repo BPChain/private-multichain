@@ -6,5 +6,9 @@ RUN cd /tmp && tar -xvzf multichain-1.0.3.tar.gz
 RUN cd /tmp/multichain-1.0.3 && mv multichaind multichain-cli multichain-util /usr/local/bin 
 COPY masterEntry.sh /
 RUN chmod +x masterEntry.sh
+COPY slaveEntry.sh /
+RUN chmod +x slaveEntry.sh
 RUN cd /usr/local/bin && chmod +x multichaind multichain-cli multichain-util
 RUN rm -rf /tmp/multichain*
+EXPOSE 7447
+EXPOSE 8000

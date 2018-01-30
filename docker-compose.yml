@@ -1,8 +1,15 @@
 version: '2'
 services: 
     masternode: 
-        build: .
-        entrypoint: /e.sh
-        stdin_open: true
-        tty: true
-        entrypoint: /masterEntry.sh
+      build: .
+      stdin_open: true
+      tty: true
+      entrypoint: /masterEntry.sh
+    slavenode: 
+      build: .
+      links: 
+        - masternode
+      stdin_open: true
+      tty: true
+      entrypoint: /slaveEntry.sh
+
