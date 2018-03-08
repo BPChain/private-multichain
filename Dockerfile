@@ -1,5 +1,5 @@
 FROM debian:stable-slim
-RUN apt-get update -y
+RUN apt-get -y update
 RUN apt-get install wget python3-pip -y
 RUN cd /tmp && wget https://www.multichain.com/download/multichain-1.0.3.tar.gz
 RUN cd /tmp && tar -xvzf multichain-1.0.3.tar.gz
