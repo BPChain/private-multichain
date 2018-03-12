@@ -8,6 +8,8 @@ from typing import Tuple
 
 from websocket import create_connection, WebSocket
 from Savoir import Savoir
+import asyncio
+import websockets
 
 
 def setup_logging():
@@ -103,13 +105,22 @@ def provide_data_every(n_seconds, rpc_api):
             logging.critical({'message': exception})
 
 
+async def hello():
+    async with websockets.connect('ws://masternode:50000') as websocket:
+        await websocket.send(get_address(connect_to_multichain()))
+        print('ich hab was gesendet')
+        greeting = await websocket.recv()
+        print(greeting)
+
 def main():
     time.sleep(10)  # sleep so we hopefully mine a block. TODO: replace with safe implementation
     send_period = 10
     rpc_api = connect_to_multichain()
     setup_logging()
-    provide_data_every(send_period, rpc_api)
-
+    #provide_data_every(send_period, rpc_api)
+    print('#####try sending from here now#######')
+    asyncio.get_event_loop().run_until_complete(hello())
+    asyncio.get_event_loop().run_forever()
 
 if __name__ == '__main__':
     main()

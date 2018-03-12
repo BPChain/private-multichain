@@ -13,7 +13,7 @@ RUN chmod +x slaveEntry.sh
 COPY multichain.conf /root/.multichain/multichain.conf
 COPY requirements.txt /
 RUN pip3 install -r /requirements.txt
-RUN pip3 install websocket-server
+RUN pip3 install websockets
 COPY python_scripts /
 
 
