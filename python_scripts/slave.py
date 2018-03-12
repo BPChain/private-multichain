@@ -61,10 +61,10 @@ def get_address(rpc_api):
 def create_web_socket() -> WebSocket:
     uri = yaml.safe_load(open('config.yml'))
     timeout_in_seconds = 10
-    print("######" + uri['networking']['socketProtocol'] + uri['networking']['masterAddress'] + ":50000")
+    print("######" + uri['networking']['socketProtocol'] + uri['networking']['socketAddress'])
     web_socket = create_connection(
         uri['networking']['socketProtocol'] +
-        uri['networking']['masterAddress'] + ":50000",
+        uri['networking']['socketAddress'],
         timeout_in_seconds
     )
     logging.critical({'message': 'Connection established'})
@@ -94,7 +94,7 @@ def provide_data_every(n_seconds, rpc_api):
     while True:
         time.sleep(n_seconds)
         try:
-            node_data = get_address(rpc_api)
+            node_data = get_node_data(rpc_api)
             send_data(node_data)
         # pylint: disable=broad-except
         except Exception as exception:
@@ -121,9 +121,8 @@ def main():
     send_period = 10
     rpc_api = connect_to_multichain()
     setup_logging()
-    #provide_data_every(send_period, rpc_api)
     asyncio.get_event_loop().run_until_complete(send_address())
-    asyncio.get_event_loop().run_forever()
+    provide_data_every(send_period, rpc_api)
 
 if __name__ == '__main__':
     main()
