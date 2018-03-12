@@ -97,28 +97,34 @@ def connect_to_multichain():
        #     print('During providing Data an error occurred: ', exception)
         #    logging.critical({'message': exception})
 
+def grant_send_permission(address):
+    rpc_api.grant(address, 'send')
 
-async def hello(websocket, path):
-    adress = await websocket.recv()
-    print("##########hab was#############"+adress.decode("utf-8"))
-    greeting = "Hello!"
-    await websocket.send(greeting)
+def grant_receive_permission(address):
+    rpc_api.grant(address, 'receive')
 
+async def send_address(websocket, path):
+    address = await websocket.recv()
+    grant_send_permission(address.decode("utf-8"))
+    await websocket.send("Send permission granted")
+    grant_receive_permission(address.decode("utf-8"))
+    await websocket.send("Receive permission granted")
 
-start_server = websockets.serve(hello, host='masternode', port=50000)
+def create_web_socket_server():
+    uri = yaml.safe_load(open('config.yml'))
+    print(uri['networking']['masterAddress'])
+    return websockets.serve(send_address, host=uri['networking']['masterAddress'], port=uri['networking']['masterPort'])
 
 
 def main():
+    global rpc_api
     time.sleep(10)  # sleep so we hopefully mine a block. TODO: replace with safe implementation
     send_period = 10
     rpc_api = connect_to_multichain()
     setup_logging()
-    print('#######Brudaaaaaaa#######')
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(start_server)
-    print('######Start Server done#######')
+    loop.run_until_complete(create_web_socket_server())
     loop.run_forever()
-    loop.close()
 
 if __name__ == '__main__':
     main()

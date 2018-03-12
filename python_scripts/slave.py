@@ -55,19 +55,16 @@ def get_node_data(rpc_api):
 def get_address(rpc_api):
     node_address = str(rpc_api.getaddresses())
     node_address = node_address[2:-2]
-    print('#######')
-    print(node_address)
-    print('#######')
     return node_address.encode('utf-8').strip()
 
 
 def create_web_socket() -> WebSocket:
     uri = yaml.safe_load(open('config.yml'))
     timeout_in_seconds = 10
-    print("######" + uri['networking']['socketProtocol'] + uri['networking']['masterAdress'] + ":50000")
+    print("######" + uri['networking']['socketProtocol'] + uri['networking']['masterAddress'] + ":50000")
     web_socket = create_connection(
         uri['networking']['socketProtocol'] +
-        uri['networking']['masterAdress'] + ":50000",
+        uri['networking']['masterAddress'] + ":50000",
         timeout_in_seconds
     )
     logging.critical({'message': 'Connection established'})
@@ -105,21 +102,27 @@ def provide_data_every(n_seconds, rpc_api):
             logging.critical({'message': exception})
 
 
-async def hello():
-    async with websockets.connect('ws://masternode:50000') as websocket:
-        await websocket.send(get_address(connect_to_multichain()))
-        print('ich hab was gesendet')
-        greeting = await websocket.recv()
-        print(greeting)
+async def send_address():
+    uri = yaml.safe_load(open('config.yml'))
+    async with websockets.connect(
+            uri['networking']['nodeSocketProtocol'] +
+            uri['networking']['masterAddress'] +
+            ":" +
+            uri['networking']['masterPort']) as websocket:
+        await websocket.send(get_address(rpc_api))
+        send_permission = await websocket.recv()
+        print(send_permission)
+        receive_permission = await websocket.recv()
+        print(receive_permission)
 
 def main():
+    global rpc_api
     time.sleep(10)  # sleep so we hopefully mine a block. TODO: replace with safe implementation
     send_period = 10
     rpc_api = connect_to_multichain()
     setup_logging()
     #provide_data_every(send_period, rpc_api)
-    print('#####try sending from here now#######')
-    asyncio.get_event_loop().run_until_complete(hello())
+    asyncio.get_event_loop().run_until_complete(send_address())
     asyncio.get_event_loop().run_forever()
 
 if __name__ == '__main__':
