@@ -1,5 +1,4 @@
 import logging
-import subprocess
 from configparser import ConfigParser
 import time
 import json
@@ -7,9 +6,9 @@ import yaml
 from typing import Tuple
 
 from websocket import create_connection, WebSocket
-import websockets
 import asyncio
 from Savoir import Savoir
+import scenario_orchestrator
 
 def setup_logging():
     pass
@@ -51,7 +50,7 @@ def get_node_data(rpc_api):
                 'isMining': is_mining}
 
 def create_web_socket() -> WebSocket:
-    uri = yaml.safe_load(open('config.yml'))
+    uri = yaml.safe_load(open('python_scripts/config.yml'))
     timeout_in_seconds = 10
     web_socket = create_connection(
         uri['networking']['socketProtocol'] +
@@ -90,24 +89,6 @@ def provide_data_every(n_seconds, rpc_api):
             print('During providing Data an error occurred: ', exception)
             logging.critical({'message': exception})
 
-def grant_send_permission(address):
-    rpc_api.grant(address, 'send')
-
-def grant_receive_permission(address):
-    rpc_api.grant(address, 'receive')
-
-async def send_address(websocket, path):
-    address = await websocket.recv()
-    grant_send_permission(address.decode("utf-8"))
-    await websocket.send("Send permission granted")
-    grant_receive_permission(address.decode("utf-8"))
-    await websocket.send("Receive permission granted")
-
-def create_web_socket_server():
-    uri = yaml.safe_load(open('config.yml'))
-    print(uri['networking']['masterAddress'])
-    return websockets.serve(send_address, host=uri['networking']['masterAddress'], port=uri['networking']['masterPort'])
-
 
 def main():
     global rpc_api
@@ -115,10 +96,9 @@ def main():
     send_period = 10
     rpc_api = connect_to_multichain()
     setup_logging()
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(create_web_socket_server())
-    #provide_data_every(send_period, rpc_api) TODO: send data collected by masternode
-    loop.run_forever()
+    #provide_data_every(send_period, rpc_api) TODO: reimplement sending of data
+    scenario_orchestrator.start_simulation(rpc_api)
+
 
 
 if __name__ == '__main__':

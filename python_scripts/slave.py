@@ -53,13 +53,11 @@ def get_node_data(rpc_api):
 
 
 def get_address(rpc_api):
-    node_address = str(rpc_api.getaddresses())
-    node_address = node_address[2:-2]
-    return node_address.encode('utf-8').strip()
+    return str(rpc_api.getaddresses())[2:-2]
 
 
 def create_web_socket() -> WebSocket:
-    uri = yaml.safe_load(open('config.yml'))
+    uri = yaml.safe_load(open('python_scripts/config.yml'))
     timeout_in_seconds = 10
     print("######" + uri['networking']['socketProtocol'] + uri['networking']['socketAddress'])
     web_socket = create_connection(
@@ -103,7 +101,7 @@ def provide_data_every(n_seconds, rpc_api):
 
 
 async def send_address():
-    uri = yaml.safe_load(open('config.yml'))
+    uri = yaml.safe_load(open('python_scripts/config.yml'))
     async with websockets.connect(
             uri['networking']['nodeSocketProtocol'] +
             uri['networking']['masterAddress'] +
@@ -122,7 +120,8 @@ def main():
     rpc_api = connect_to_multichain()
     setup_logging()
     asyncio.get_event_loop().run_until_complete(send_address())
-    provide_data_every(send_period, rpc_api)
+    # provide_data_every(send_period, rpc_api) TODO: send data to backendlistener
+    asyncio.get_event_loop().run_forever() #TODO: remove once provide data in backendlistener
 
 if __name__ == '__main__':
     main()
