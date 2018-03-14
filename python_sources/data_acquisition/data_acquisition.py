@@ -1,5 +1,4 @@
 import logging
-import subprocess
 from configparser import ConfigParser
 import time
 import json
@@ -8,11 +7,9 @@ from typing import Tuple
 
 from websocket import create_connection, WebSocket
 from Savoir import Savoir
-import asyncio
-import websockets
-
 
 def setup_logging():
+    # TODO: Implement
     pass
 
 
@@ -30,7 +27,7 @@ def read_rpc_port() -> str:
     return parser.get('conf','rpcport')
 
 
-def connect_to_multichain():
+def connect_to_multichain()-> Savoir:
     user, password = read_user_and_password()
     rpc_host = 'localhost'
     rpc_port = read_rpc_port()
@@ -48,18 +45,12 @@ def get_node_data(rpc_api):
     print('############################')
     #TODO: calculate blocktime by getting time between last blocks
     return {'chain': 'multichain', 'hostId': -1, 'hashrate': hashespersec, 'gasPrice': -1,
-                 'avgDifficulty': difficulty, 'avgBlocktime': -1,
-                 'isMining': is_mining}
+                'avgDifficulty': difficulty, 'avgBlocktime': -1,
+                'isMining': is_mining}
 
-
-def get_address(rpc_api):
-    return str(rpc_api.getaddresses())[2:-2]
-
-
-def create_web_socket() -> WebSocket:
-    uri = yaml.safe_load(open('python_scripts/config.yml'))
+def connect_to_server() -> WebSocket:
+    uri = yaml.safe_load(open('data_acquisition/config.yml'))
     timeout_in_seconds = 10
-    print("######" + uri['networking']['socketProtocol'] + uri['networking']['socketAddress'])
     web_socket = create_connection(
         uri['networking']['socketProtocol'] +
         uri['networking']['socketAddress'],
@@ -71,15 +62,13 @@ def create_web_socket() -> WebSocket:
 
 def send_data(node_data):
     try:
-        web_socket = create_web_socket()
-        web_socket.send(node_data)
-        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        ws_connection = connect_to_server()
+        ws_connection.send(json.dumps(node_data))
         print('Sent\nReceiving...')
-        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-        result = web_socket.recv()
+        result = ws_connection.recv()
         print('Received ', result)
         logging.critical({'message': result})
-        web_socket.close()
+        ws_connection.close()
     # Not nice, but works for now.
     # pylint: disable=broad-except
     except Exception as exception:
@@ -100,28 +89,13 @@ def provide_data_every(n_seconds, rpc_api):
             logging.critical({'message': exception})
 
 
-async def send_address():
-    uri = yaml.safe_load(open('python_scripts/config.yml'))
-    async with websockets.connect(
-            uri['networking']['nodeSocketProtocol'] +
-            uri['networking']['masterAddress'] +
-            ":" +
-            uri['networking']['masterPort']) as websocket:
-        await websocket.send(get_address(rpc_api))
-        send_permission = await websocket.recv()
-        print(send_permission)
-        receive_permission = await websocket.recv()
-        print(receive_permission)
-
 def main():
-    global rpc_api
     time.sleep(10)  # sleep so we hopefully mine a block. TODO: replace with safe implementation
     send_period = 10
-    rpc_api = connect_to_multichain()
     setup_logging()
-    asyncio.get_event_loop().run_until_complete(send_address())
-    # provide_data_every(send_period, rpc_api) TODO: send data to backendlistener
-    asyncio.get_event_loop().run_forever() #TODO: remove once provide data in backendlistener
+    rpc_api = connect_to_multichain()
+    provide_data_every(send_period, rpc_api)
+
 
 if __name__ == '__main__':
     main()

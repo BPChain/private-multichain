@@ -1,7 +1,0 @@
-networking:
-  nodeSocketProtocol: "ws://"
-  socketProtocol: "wss://"
-  socketPort: ""
-  socketAddress: "bpt-lab.org/bp2017w1-backendlistener"
-  masterAddress: "masternode"
-  masterPort: "50000"
