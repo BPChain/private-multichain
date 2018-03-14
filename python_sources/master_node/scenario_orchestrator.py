@@ -32,7 +32,7 @@ class ScenarioOrchestrator:
         self.get_slave_addresses()
 
     def connect_to_slaves(self, number_of_slaves):
-        sleep(40000)
+        sleep(20)
         slave = rpyc.connect("slavenode_1", 60000)
         self.slaves.append(slave.root)
         print(self.slaves)
