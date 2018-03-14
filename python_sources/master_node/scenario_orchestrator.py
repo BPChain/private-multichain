@@ -64,8 +64,9 @@ class ScenarioOrchestrator:
             self.groups[label] = []
             for i in range(number):
                 for right in rights:
-                    self.chain_rpc.grant(self.chain_nodes[i].getaddresses()[0], right)
-                self.groups[label].append(self.chain_nodes.pop(0))
+                    chain_node = self.chain_nodes.pop(0)
+                    self.chain_rpc.grant(chain_node.getaddresses()[0], right)
+                    self.groups[label].append(chain_node)
 
 
 
