@@ -18,4 +18,5 @@ class SlaveService(rpyc.Service):
 if __name__ == '__main__':
     from rpyc.utils.server import ThreadedServer
     server = ThreadedServer(SlaveService, port=60000)
+    print("start slave")
     server.start()

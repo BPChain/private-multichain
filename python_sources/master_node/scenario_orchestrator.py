@@ -27,11 +27,12 @@ class ScenarioOrchestrator:
     def __init__(self):
         self.slaves = []
         number_slaves = 1
+        print("Orchestrator is ready for connections")
         self.connect_to_slaves(number_slaves)
         self.get_slave_addresses()
 
     def connect_to_slaves(self, number_of_slaves):
-        sleep(20)
+        sleep(40000)
         slave = rpyc.connect("slavenode_1", 60000)
         self.slaves.append(slave.root)
         print(self.slaves)
