@@ -1,3 +1,5 @@
+import socket
+
 import rpyc
 from time import sleep
 from Savoir import Savoir
@@ -56,6 +58,9 @@ class ScenarioOrchestrator:
                 print("################ Added connection to", slave_id)
             except ConnectionRefusedError:
                 print("Could not connect to", slave_id, "retry later")
+            except socket.gaierror:
+                print("could not resolve name. removing id")
+                unconnected_ids.remove(slave_id)
 
     def get_slave_addresses(self):
         for chain_node in self.chain_nodes:

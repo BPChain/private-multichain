@@ -8,6 +8,7 @@ from typing import Tuple
 from websocket import create_connection, WebSocket
 from Savoir import Savoir
 
+
 def setup_logging():
     # TODO: Implement
     pass
@@ -24,29 +25,43 @@ def read_rpc_port() -> str:
     conf_string = '[conf]\n' + open('/root/.multichain/multichain.conf').read()
     parser = ConfigParser()
     parser.read_string(conf_string)
-    return parser.get('conf','rpcport')
+    return parser.get('conf', 'rpcport')
 
 
-def connect_to_multichain()-> Savoir:
+def connect_to_multichain() -> Savoir:
     user, password = read_user_and_password()
     rpc_host = 'localhost'
     rpc_port = read_rpc_port()
     chain_name = 'bpchain'
-    rpc_api = Savoir(user, password, rpc_host, rpc_port, chain_name)
-    return rpc_api
+    chain_node = Savoir(user, password, rpc_host, rpc_port, chain_name)
+    return chain_node
 
 
-def get_node_data(rpc_api):
-    difficulty = float(rpc_api.getmininginfo()['difficulty'])
-    hashespersec = int(rpc_api.getmininginfo()['hashespersec'])
+def get_node_data(chain_node, last_block_number):
+    difficulty = float(chain_node.getmininginfo()['difficulty'])
+    hashespersec = int(chain_node.getmininginfo()['hashespersec'])
     is_mining = 0 if hashespersec == 0 else 1  # TODO: replace with 'correct' request
-    print('############################')
-    print(difficulty, hashespersec, is_mining)
-    print('############################')
-    #TODO: calculate blocktime by getting time between last blocks
+    avg_blocktime, new_last_block_number = calculate_avg_blocktime(chain_node, last_block_number)
+    logging.info(difficulty, hashespersec, is_mining, avg_blocktime)
     return {'chainName': 'multichain', 'hostId': -1, 'hashrate': hashespersec, 'gasPrice': -1,
-                'avgDifficulty': difficulty, 'avgBlocktime': -1,
-                'isMining': is_mining}
+            'avgDifficulty': difficulty, 'avgBlocktime': avg_blocktime,
+            'isMining': is_mining}, new_last_block_number
+
+
+def calculate_avg_blocktime(chain_node, last_block_number):
+    newest_block_number = chain_node.getblockchaininfo()['blocks']
+    print(newest_block_number, "newestblocknumber", type(newest_block_number))
+    newest_unix_time = time.time()
+    if last_block_number < newest_block_number:
+        old_unix_time = chain_node.getblock(str(last_block_number))['time']
+        delta_blocks = last_block_number - newest_block_number
+    else:
+        if last_block_number == 0:
+            return 0
+        old_unix_time = chain_node.getblock(str(last_block_number - 1))['time']
+        delta_blocks = 1
+    delta_time = newest_unix_time-old_unix_time
+    return delta_time/delta_blocks, newest_block_number
 
 
 def connect_to_server() -> WebSocket:
@@ -57,7 +72,7 @@ def connect_to_server() -> WebSocket:
         uri['networking']['socketAddress'],
         timeout_in_seconds
     )
-    logging.critical({'message': 'Connection established'})
+    logging.info({'message': 'Connection established'})
     return web_socket
 
 
@@ -65,28 +80,25 @@ def send_data(node_data):
     try:
         ws_connection = connect_to_server()
         ws_connection.send(json.dumps(node_data))
-        print('Sent\nReceiving...')
         result = ws_connection.recv()
-        print('Received ', result)
         logging.critical({'message': result})
         ws_connection.close()
     # Not nice, but works for now.
     # pylint: disable=broad-except
     except Exception as exception:
-        print('Exception occurred during sending: ')
-        print(exception)
         logging.critical({'message': exception})
 
 
 def provide_data_every(n_seconds, rpc_api):
+    last_block_number = 0
     while True:
         time.sleep(n_seconds)
         try:
-            node_data = get_node_data(rpc_api)
+            node_data, last_block_number = get_node_data(rpc_api, last_block_number)
+            print(node_data)
             send_data(node_data)
         # pylint: disable=broad-except
         except Exception as exception:
-            print('During providing Data an error occurred: ', exception)
             logging.critical({'message': exception})
 
 
