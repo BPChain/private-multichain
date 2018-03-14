@@ -2,7 +2,6 @@ import rpyc
 from time import sleep
 from Savoir import Savoir
 
-
 # addresses = []
 #
 #
@@ -26,7 +25,8 @@ from Savoir import Savoir
 
 class ScenarioOrchestrator:
     def __init__(self):
-        self.connection_refs = []
+        self.chain_nodes = []
+
         number_slaves = 1
         print("Orchestrator is ready for connections")
         try:
@@ -39,17 +39,13 @@ class ScenarioOrchestrator:
         sleep(20)
 
         connection = rpyc.connect('slavenode', 60000)
-        self.connection_refs.append(connection)
+        user, password, rpc_port = connection.root.get_credentials()
+        chain_node = Savoir(user, password, "slavenode", rpc_port, "bpchain")
+        self.chain_nodes.append(chain_node)
 
     def get_slave_addresses(self):
-        for con in self.connection_refs:
-            print(con.root.wallet_addresses())
-            print(con.root.get_credentials())
-            user, password, rpc_port = con.root.get_credentials()
-            s = Savoir(user, password, "slavenode", rpc_port, "bpchain")
-            print(s.getinfo())
-
-
+        for chain_node in self.chain_nodes:
+            print(chain_node.getaddresses())
 
 
 if __name__ == '__main__':
