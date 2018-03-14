@@ -77,3 +77,5 @@ class ScenarioOrchestrator:
 
 if __name__ == '__main__':
     orchestrator = ScenarioOrchestrator()
+    while True:
+        sleep(1000000)  # So Docker will not stop container
