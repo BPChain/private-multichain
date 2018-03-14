@@ -29,31 +29,32 @@ class ScenarioOrchestrator:
         self.chain_nodes = []
         self.chain_rpc = connect_to_multichain()
         self.groups = {}
-
-
-        number_slaves = 3
+        number_slaves = 10
         print("Orchestrator is ready for connections")
-        try:
-            print("connectiong")
-            self.connect_to_slaves(number_slaves)
-            print('connected')
-        except ConnectionRefusedError:
-            self.connect_to_slaves(number_slaves)
+        print("Starting to connect")
+        self.connect_to_slaves(number_slaves)
+        print('Connected all Slaves')
         self.get_slave_addresses()
         self.grant_rights(1, ['receive','send'], 'Blubber')
 
     def connect_to_slaves(self, number_of_slaves):
         sleep(20)
-        for number in range(1,number_of_slaves+1):
-            connection = rpyc.connect("privatemultichain_slavenode_"+str(number), 60000)
-            user, password, rpc_port = connection.root.get_credentials()
-            chain_node = Savoir(user, password, "privatemultichain_slavenode_"+str(number), rpc_port, "bpchain")
-            self.chain_nodes.append(chain_node)
-            print("################ Add connection")
+        unconnected_ids = list(range(1, number_of_slaves+1))
+        for slave_id in unconnected_ids:
+            try:
+                connection = rpyc.connect("privatemultichain_slavenode_"+str(slave_id), 60000)
+                user, password, rpc_port = connection.root.get_credentials()
+                chain_node = Savoir(user, password, "privatemultichain_slavenode_" + str(slave_id),
+                                    rpc_port, "bpchain")
+                self.chain_nodes.append(chain_node)
+                unconnected_ids.remove(slave_id)
+                print("################ Added connection to", slave_id)
+            except ConnectionRefusedError:
+                print("Could not connect to", slave_id, "retry later")
 
     def get_slave_addresses(self):
         for chain_node in self.chain_nodes:
-            print("############## Address new")
+            print("############## new Address")
             print(chain_node.getaddresses())
 
     def grant_rights(self, number, rights, label):
