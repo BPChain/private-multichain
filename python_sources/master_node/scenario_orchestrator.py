@@ -29,14 +29,17 @@ class ScenarioOrchestrator:
         self.chain_nodes = []
         self.chain_rpc = connect_to_multichain()
         self.groups = {}
-        number_slaves = 10
+        number_slaves = 3
         print("Orchestrator is ready for connections")
         print("Starting to connect")
         self.connect_to_slaves(number_slaves)
         print('Connected all Slaves')
         self.get_slave_addresses()
-        self.grant_rights(2, ['receive','send'], 'Blubber')
-        self.issue_assets('a1', 100, 0.1)
+        self.grant_rights(2, ['receive','send'], 'Students')
+        self.issue_assets('EVAPCoin', 100, 0.1)
+        self.send_assets(self.chain_rpc, self.groups['Students'][0], 'EVAPCoin', 10)
+        self.send_assets_to_group(self.chain_rpc, 'Students', 'EVAPCoin', 10)
+
 
     def connect_to_slaves(self, number_of_slaves):
         sleep(20)
@@ -64,15 +67,20 @@ class ScenarioOrchestrator:
         else:
             self.groups[label] = []
             for i in range(number):
+                chain_node = self.chain_nodes.pop(0)
                 for right in rights:
-                    chain_node = self.chain_nodes.pop(0)
                     self.chain_rpc.grant(chain_node.getaddresses()[0], right)
-                    self.groups[label].append(chain_node)
+                self.groups[label].append(chain_node)
 
     def issue_assets(self, asset_name, quantity, units):
         self.chain_rpc.issue(self.chain_rpc.getaddresses()[0], asset_name, quantity, units)
-        print('i issued assets')
 
+    def send_assets(self, sender, receipent, asset_name, quantity):
+        sender.sendasset(receipent.getaddresses()[0], asset_name, quantity)
+
+    def send_assets_to_group(self, sender, receipent_group, asset_name, quantity):
+        for member in self.groups[receipent_group]:
+            self.send_assets(sender, member, asset_name, quantity)
 
 
 if __name__ == '__main__':
