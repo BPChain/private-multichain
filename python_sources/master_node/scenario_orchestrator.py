@@ -25,21 +25,29 @@ from time import sleep
 
 class ScenarioOrchestrator:
     def __init__(self):
-        self.slaves = []
+        self.connection_refs = []
         number_slaves = 1
         print("Orchestrator is ready for connections")
-        self.connect_to_slaves(number_slaves)
+        try:
+            self.connect_to_slaves(number_slaves)
+        except ConnectionRefusedError:
+            self.connect_to_slaves(number_slaves)
         self.get_slave_addresses()
+
 
     def connect_to_slaves(self, number_of_slaves):
         sleep(20)
-        slave = rpyc.connect("slavenode_1", 60000)
-        self.slaves.append(slave.root)
-        print(self.slaves)
+
+        connection = rpyc.connect('slavenode', 60000)
+        self.connection_refs.append(connection)
+
 
     def get_slave_addresses(self):
-        for slave in self.slaves:
-            print(slave.wallet_addresses())
+        for con in self.connection_refs:
+            print(con.root.wallet_addresses())
+            print(con.root.testing())
+            print(con.root.testing())
+            print(con.root.testing())
 
 
 if __name__ == '__main__':
