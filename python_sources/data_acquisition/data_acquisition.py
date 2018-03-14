@@ -44,13 +44,13 @@ def get_node_data(rpc_api):
     print(difficulty, hashespersec, is_mining)
     print('############################')
     #TODO: calculate blocktime by getting time between last blocks
-    return {'chain': 'multichain', 'hostId': -1, 'hashrate': hashespersec, 'gasPrice': -1,
+    return {'chainName': 'multichain', 'hostId': -1, 'hashrate': hashespersec, 'gasPrice': -1,
                 'avgDifficulty': difficulty, 'avgBlocktime': -1,
                 'isMining': is_mining}
 
 
 def connect_to_server() -> WebSocket:
-    uri = yaml.safe_load(open('data_acquisition/config.yml'))
+    uri = yaml.safe_load(open('/python_sources/data_acquisition/config.yml'))
     timeout_in_seconds = 10
     web_socket = create_connection(
         uri['networking']['socketProtocol'] +
