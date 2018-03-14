@@ -39,6 +39,7 @@ class ScenarioOrchestrator:
         self.issue_assets('EVAPCoin', 100, 0.1)
         self.send_assets(self.chain_rpc, self.groups['Students'][0], 'EVAPCoin', 10)
         self.send_assets_to_group(self.chain_rpc, 'Students', 'EVAPCoin', 10)
+        self.revoke_rights('Students', ['receive'])
 
 
     def connect_to_slaves(self, number_of_slaves):
@@ -82,6 +83,10 @@ class ScenarioOrchestrator:
         for member in self.groups[receipent_group]:
             self.send_assets(sender, member, asset_name, quantity)
 
+    def revoke_rights(self, group, rights):
+        for member in self.groups[group]:
+            for right in rights:
+                self.chain_rpc.revoke(member.getaddresses()[0], right)
 
 if __name__ == '__main__':
     orchestrator = ScenarioOrchestrator()
