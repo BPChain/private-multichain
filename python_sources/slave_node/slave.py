@@ -9,12 +9,8 @@ class SlaveService(rpyc.Service):
         self.exposed_chain_rpc = connect_to_multichain()
         print("New Connection")
 
-
     def on_disconnect(self):
         print("Connection closed")
-
-    def exposed_wallet_addresses(self):
-        return self.exposed_chain_rpc.getaddresses()
 
     def exposed_get_chain_rpc(self):
         return self.exposed_chain_rpc
