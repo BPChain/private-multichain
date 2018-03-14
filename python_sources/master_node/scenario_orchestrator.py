@@ -35,7 +35,8 @@ class ScenarioOrchestrator:
         self.connect_to_slaves(number_slaves)
         print('Connected all Slaves')
         self.get_slave_addresses()
-        self.grant_rights(1, ['receive','send'], 'Blubber')
+        self.grant_rights(2, ['receive','send'], 'Blubber')
+        self.issue_assets('a1', 100, 0.1)
 
     def connect_to_slaves(self, number_of_slaves):
         sleep(20)
@@ -67,6 +68,10 @@ class ScenarioOrchestrator:
                     chain_node = self.chain_nodes.pop(0)
                     self.chain_rpc.grant(chain_node.getaddresses()[0], right)
                     self.groups[label].append(chain_node)
+
+    def issue_assets(self, asset_name, quantity, units):
+        self.chain_rpc.issue(self.chain_rpc.getaddresses()[0], asset_name, quantity, units)
+        print('i issued assets')
 
 
 

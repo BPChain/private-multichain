@@ -48,6 +48,7 @@ def get_node_data(rpc_api):
                 'avgDifficulty': difficulty, 'avgBlocktime': -1,
                 'isMining': is_mining}
 
+
 def connect_to_server() -> WebSocket:
     uri = yaml.safe_load(open('data_acquisition/config.yml'))
     timeout_in_seconds = 10
