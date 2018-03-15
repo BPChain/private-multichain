@@ -31,7 +31,7 @@ class ScenarioOrchestrator:
         logger.info("Orchestrator is ready for connections")
 
     def connect_to_slaves(self, number_of_slaves):
-        sleep(20)
+        sleep(40)
         unconnected_ids = list(range(1, number_of_slaves + 1))
         while unconnected_ids:
             slave_id = unconnected_ids.pop(0)
@@ -64,6 +64,7 @@ class ScenarioOrchestrator:
         self.chain_rpc.issue(self.chain_rpc.getaddresses()[0], asset_name, quantity, units)
 
     def send_assets(self, sender, receipent, asset_name, quantity):
+        logger.info("Send assets from %s to %s", sender, receipent)
         sender.sendasset(receipent.getaddresses()[0], asset_name, quantity)
 
     def send_assets_to_group(self, sender, receipent_group, asset_name, quantity):
