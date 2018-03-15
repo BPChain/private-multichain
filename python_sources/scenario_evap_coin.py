@@ -22,10 +22,10 @@ if __name__ == '__main__':
     while True:
         sleep(10)
         orchestrator.send_assets(orchestrator.groups['Students'][0],
-                                 orchestrator.groups['Stores'][1], 'EVAPCoin', 2)
+                                 orchestrator.groups['Students'][1], 'EVAPCoin', 2)
         sleep(10)
         orchestrator.send_assets(orchestrator.groups['Students'][1],
-                                 orchestrator.groups['Stores'][0], 'EVAPCoin', 2)
+                                 orchestrator.groups['Students'][0], 'EVAPCoin', 2)
 
 
     #while True:
