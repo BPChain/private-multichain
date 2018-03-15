@@ -50,11 +50,10 @@ def get_node_data(chain_node, last_block_number):
 
 def calculate_avg_blocktime(chain_node, last_block_number):
     newest_block_number = chain_node.getblockchaininfo()['blocks']
-    print(newest_block_number, "newestblocknumber", type(newest_block_number))
     newest_unix_time = time.time()
     if last_block_number < newest_block_number:
         old_unix_time = chain_node.getblock(str(last_block_number))['time']
-        delta_blocks = last_block_number - newest_block_number
+        delta_blocks = newest_block_number - last_block_number
     else:
         if last_block_number == 0:
             return 0
