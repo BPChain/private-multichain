@@ -47,6 +47,10 @@ class ScenarioOrchestrator:
                 logger.warning("Could not connect to %d. retry later", slave_id)
             except socket.gaierror:
                 logger.warning("Could not resolve node %d. removing id", slave_id)
+            except Exception as e:
+                logger.error("Something went very wrong: %s", e)
+                sleep(10)
+
 
     def grant_rights(self, number, rights, label):
         if number > len(self.chain_nodes):
