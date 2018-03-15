@@ -104,7 +104,7 @@ def provide_data_every(n_seconds, rpc_api):
 
 
 def main():
-    time.sleep(10)  # sleep so we hopefully mine a block. TODO: replace with safe implementation
+    time.sleep(15)  # sleep so we hopefully mine a block. TODO: replace with safe implementation
     send_period = 10
     setup_logging()
     rpc_api = connect_to_multichain()

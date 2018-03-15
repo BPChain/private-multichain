@@ -4,38 +4,54 @@ import rpyc
 from time import sleep
 from Savoir import Savoir
 from ..data_acquisition.data_acquisition import connect_to_multichain
+import logging
+import sys
+
+
+def set_up_logging():
+    logger = logging.getLogger(__name__)
+    console = logging.StreamHandler()
+    formatter = logging.Formatter('%(levelname)s - %(message)s | In: %(module)s at: %(lineno)d')
+    console.setLevel(logging.INFO)
+    console.setFormatter(formatter)
+    logger.setLevel(logging.INFO)
+    logger.addHandler(console)
+    return logger
+
+
+logger = set_up_logging()
+
 
 class ScenarioOrchestrator:
+
     def __init__(self):
         self.chain_nodes = []
         self.chain_rpc = connect_to_multichain()
         self.groups = {}
-        print("Orchestrator is ready for connections")
-        print("Starting to connect")
-
+        logger.info("Orchestrator is ready for connections")
 
     def connect_to_slaves(self, number_of_slaves):
         sleep(20)
-        unconnected_ids = list(range(1, number_of_slaves+1))
-        for slave_id in unconnected_ids:
+        unconnected_ids = list(range(1, number_of_slaves + 1))
+        while unconnected_ids:
+            slave_id = unconnected_ids.pop(0)
             try:
-                connection = rpyc.connect("privatemultichain_slavenode_"+str(slave_id), 60000)
+                connection = rpyc.connect("privatemultichain_slavenode_" + str(slave_id), 60000)
                 user, password, rpc_port = connection.root.get_credentials()
                 chain_node = Savoir(user, password, "privatemultichain_slavenode_" + str(slave_id),
                                     rpc_port, "bpchain")
                 self.chain_nodes.append(chain_node)
-                unconnected_ids.remove(slave_id)
-                print("################ Added connection to", slave_id)
+                logger.info("Added connection to %d", slave_id)
             except ConnectionRefusedError:
-                print("Could not connect to", slave_id, "retry later")
+                unconnected_ids.append(slave_id)
+                logger.warning("Could not connect to %d. retry later", slave_id)
             except socket.gaierror:
-                print("could not resolve name. removing id")
-                unconnected_ids.remove(slave_id)
-
+                logger.warning("Could not resolve node %d. removing id", slave_id)
 
     def grant_rights(self, number, rights, label):
         if number > len(self.chain_nodes):
-            print('Error not enough resources')
+            logger.error("Not enough Nodes. Requested %d had %d", number, len(self.chain_nodes))
+            sys.exit(1)
         else:
             self.groups[label] = []
             for i in range(number):
@@ -58,6 +74,7 @@ class ScenarioOrchestrator:
         for member in self.groups[group]:
             for right in rights:
                 self.chain_rpc.revoke(member.getaddresses()[0], right)
+
 
 if __name__ == '__main__':
     orchestrator = ScenarioOrchestrator()
