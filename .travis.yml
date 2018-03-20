@@ -10,6 +10,6 @@ install:
   - pip install pylint
 # command to test
 script:
-  - lintRes=$(pylint python_sources/ | egrep -o '(?:rated at )(\d+\.?\d*)' | egrep -o '(\d+\.?\d*)')
+  - lintRes=$(pylint python_sources/ | grep -E -o '(?:rated at )(\d+\.?\d*)' | grep -E -o '(\d+\.?\d*)')
   - echo $lintRes
 
