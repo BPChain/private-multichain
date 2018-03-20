@@ -64,8 +64,11 @@ class ScenarioOrchestrator:
                     self.chain_rpc.grant(chain_node.getaddresses()[0], right)
                 self.groups[label].append(chain_node)
 
-    def issue_assets(self, asset_name, quantity, units):
-        self.chain_rpc.issue(self.chain_rpc.getaddresses()[0], asset_name, quantity, units)
+    def issue_assets(self, asset_name, quantity, units, issue_more_allowed):
+        self.chain_rpc.issue(self.chain_rpc.getaddresses()[0], {'name': asset_name, 'open': issue_more_allowed}, quantity, units)
+
+    def issue_more(self, asset_name, quantity):
+        self.chain_rpc.issuemore(self.chain_rpc.getaddresses()[0], asset_name, quantity)
 
     def send_assets(self, sender, recipient, asset_name, quantity):
         logger.info("Send assets from %s to %s", sender, recipient)
@@ -79,6 +82,17 @@ class ScenarioOrchestrator:
         for member in self.groups[group]:
             for right in rights:
                 self.chain_rpc.revoke(member.getaddresses()[0], right)
+
+    def get_total_balance(self, sender):
+        return sender.gettotalbalances()
+
+    def get_quantity_of_asset(self, sender, asset_name):
+        total_balances = self.get_total_balance(sender)
+        for balance in total_balances:
+            if asset_name in balance.values():
+                return float(balance['qty'])
+        return 0
+
 
 
 if __name__ == '__main__':
