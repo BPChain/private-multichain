@@ -6,7 +6,7 @@ from .master_node.scenario_orchestrator import ScenarioOrchestrator
 """Run a scenario with the help of the Scenario Orchestrator"""
 
 if __name__ == '__main__':
-    #todo implement waitable Promisses or similar to wait on transaction completion
+    # todo implement waitable Promisses or similar to wait on transaction completion
     NUMBER_OF_SLAVES = int(sys.argv[1]) if len(sys.argv) > 1 else 1
     orchestrator = ScenarioOrchestrator()
     orchestrator.connect_to_slaves(NUMBER_OF_SLAVES)
@@ -34,4 +34,3 @@ if __name__ == '__main__':
         if orchestrator.get_quantity_of_asset(orchestrator.groups['Students'][1], 'EVAPCoin') > 0:
             orchestrator.send_assets(orchestrator.groups['Students'][1],
                                      orchestrator.groups['Stores'][0], 'EVAPCoin', 2)
-

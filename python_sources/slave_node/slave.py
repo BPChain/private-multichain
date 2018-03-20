@@ -12,12 +12,13 @@ class SlaveService(rpyc.Service):
         print("Connection closed")
 
     def exposed_get_credentials(self):
-        user, password =  read_user_and_password()
+        user, password = read_user_and_password()
         return user, password, read_rpc_port()
 
 
 if __name__ == '__main__':
     from rpyc.utils.server import ThreadedServer
+
     server = ThreadedServer(SlaveService, port=60000)
     print("start slave")
     server.start()
