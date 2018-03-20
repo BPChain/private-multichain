@@ -1,7 +1,7 @@
 from time import sleep
 import sys
 
-from .master_node.scenario_orchestrator import ScenarioOrchestrator
+from .scenario_orchestrator import ScenarioOrchestrator
 
 """Run a scenario with the help of the Scenario Orchestrator"""
 
