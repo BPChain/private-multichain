@@ -67,12 +67,12 @@ class ScenarioOrchestrator:
     def issue_assets(self, asset_name, quantity, units):
         self.chain_rpc.issue(self.chain_rpc.getaddresses()[0], asset_name, quantity, units)
 
-    def send_assets(self, sender, receipent, asset_name, quantity):
-        logger.info("Send assets from %s to %s", sender, receipent)
-        sender.sendasset(receipent.getaddresses()[0], asset_name, quantity)
+    def send_assets(self, sender, recipient, asset_name, quantity):
+        logger.info("Send assets from %s to %s", sender, recipient)
+        sender.sendasset(recipient.getaddresses()[0], asset_name, quantity)
 
-    def send_assets_to_group(self, sender, receipent_group, asset_name, quantity):
-        for member in self.groups[receipent_group]:
+    def send_assets_to_group(self, sender, recipient_group, asset_name, quantity):
+        for member in self.groups[recipient_group]:
             self.send_assets(sender, member, asset_name, quantity)
 
     def revoke_rights(self, group, rights):
