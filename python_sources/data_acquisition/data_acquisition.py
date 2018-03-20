@@ -2,8 +2,9 @@ import logging
 from configparser import ConfigParser
 import time
 import json
-import yaml
 from typing import Tuple
+
+import yaml
 
 from websocket import create_connection, WebSocket
 from Savoir import Savoir

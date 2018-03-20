@@ -1,11 +1,11 @@
-import socket
-
-import rpyc
+from socket import gaierror
 from time import sleep
-from Savoir import Savoir
-from ..data_acquisition.data_acquisition import connect_to_multichain
 import logging
 import sys
+
+import rpyc
+from Savoir import Savoir
+from ..data_acquisition.data_acquisition import connect_to_multichain
 
 
 def set_up_logging():
@@ -45,7 +45,7 @@ class ScenarioOrchestrator:
             except ConnectionRefusedError:
                 unconnected_ids.append(slave_id)
                 logger.warning("Could not connect to %d. retry later", slave_id)
-            except socket.gaierror:
+            except gaierror:
                 logger.warning("Could not resolve node %d. removing id", slave_id)
             except Exception as e:
                 logger.error("Something went very wrong: %s", e)

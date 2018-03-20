@@ -10,4 +10,6 @@ install:
   - pip install pylint
 # command to test
 script:
-  - pylint python_sources/
+  - lintRes =$(pylint python_sources/ | egrep -o '(?:rated at )(\d+\.?\d*)' | egrep -o '(\d+\.?\d*)')
+  - if (( $(echo "$lintRes < 8" | bc -l) )); then echo Linting score to low: $res. Failing; (exit1);fi;
+
