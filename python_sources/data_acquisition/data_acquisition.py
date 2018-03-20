@@ -43,9 +43,8 @@ def get_node_data(chain_node, last_block_number):
     is_mining = 0 if hashespersec == 0 else 1  # TODO: replace with 'correct' request
     avg_blocktime, new_last_block_number = calculate_avg_blocktime(chain_node, last_block_number)
     logging.info(difficulty, hashespersec, is_mining, avg_blocktime)
-    return {'chainName': 'multichain', 'hostId': chain_node.getaddresses()[0], 'hashrate':
-        hashespersec,
-            'gasPrice': -1,
+    return {'chainName': 'multichain', 'hostId': chain_node.getaddresses()[0],
+            'hashrate': hashespersec, 'gasPrice': -1,
             'avgDifficulty': difficulty, 'avgBlocktime': avg_blocktime,
             'isMining': is_mining}, new_last_block_number
 
@@ -61,8 +60,8 @@ def calculate_avg_blocktime(chain_node, last_block_number):
             return 0
         old_unix_time = chain_node.getblock(str(last_block_number - 1))['time']
         delta_blocks = 1
-    delta_time = newest_unix_time-old_unix_time
-    return delta_time/delta_blocks, newest_block_number
+    delta_time = newest_unix_time - old_unix_time
+    return delta_time / delta_blocks, newest_block_number
 
 
 def connect_to_server() -> WebSocket:
@@ -108,7 +107,7 @@ def main():
     send_period = 10
     setup_logging()
     rpc_api = connect_to_multichain()
-    #provide_data_every(send_period, rpc_api)
+    # provide_data_every(send_period, rpc_api)
 
 
 if __name__ == '__main__':

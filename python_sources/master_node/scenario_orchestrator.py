@@ -65,7 +65,8 @@ class ScenarioOrchestrator:
                 self.groups[label].append(chain_node)
 
     def issue_assets(self, asset_name, quantity, units, issue_more_allowed):
-        self.chain_rpc.issue(self.chain_rpc.getaddresses()[0], {'name': asset_name, 'open': issue_more_allowed}, quantity, units)
+        self.chain_rpc.issue(self.chain_rpc.getaddresses()[0],
+                             {'name': asset_name, 'open': issue_more_allowed}, quantity, units)
 
     def issue_more(self, asset_name, quantity):
         self.chain_rpc.issuemore(self.chain_rpc.getaddresses()[0], asset_name, quantity)
@@ -92,6 +93,7 @@ class ScenarioOrchestrator:
             if asset_name in balance.values():
                 return float(balance['qty'])
         return 0
+
 
 
 
