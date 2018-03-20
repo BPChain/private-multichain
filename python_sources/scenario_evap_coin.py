@@ -14,6 +14,7 @@ if __name__ == '__main__':
     sleep(10)
     orchestrator.send_assets_to_group(orchestrator.chain_rpc, 'Students', 'EVAPCoin', 3)
     sleep(10)
+
     print(orchestrator.get_quantity_of_asset(orchestrator.groups['Students'][3], 'EVAPCoin'))
     orchestrator.send_assets(orchestrator.groups['Students'][3],
                              orchestrator.groups['Stores'][2], 'EVAPCoin', 5)
