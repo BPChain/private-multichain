@@ -1,5 +1,6 @@
 # private-multichain
 Dev-Branch: [![Maintainability](https://api.codeclimate.com/v1/badges/0f8141a9f162b0f52679/maintainability)](https://codeclimate.com/github/BPChain/private-multichain/maintainability)
+Master-Branch: [![Build Status](https://travis-ci.org/BPChain/private-multichain.svg?branch=master)](https://travis-ci.org/BPChain/private-multichain)
 
 Run Multichain in Docker. The setup is comprised of three parts.
 1. `data_acquisition` which sends the runtime data of the chain
