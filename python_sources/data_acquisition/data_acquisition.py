@@ -1,6 +1,5 @@
 """Collect and send data to the api-server."""
 
-import logging
 from configparser import ConfigParser
 import time
 import json
@@ -43,7 +42,7 @@ def get_node_data(chain_node, last_block_number):
     hashespersec = int(chain_node.getmininginfo()['hashespersec'])
     is_mining = 0 if hashespersec == 0 else 1  # TODO: replace with 'correct' request
     avg_blocktime, new_last_block_number = calculate_avg_blocktime(chain_node, last_block_number)
-    LOG.info(difficulty, hashespersec, is_mining, avg_blocktime)
+    LOG.info({difficulty, hashespersec, is_mining, avg_blocktime})
     return {'chainName': 'multichain', 'hostId': chain_node.getaddresses()[0],
             'hashrate': hashespersec, 'gasPrice': -1,
             'avgDifficulty': difficulty, 'avgBlocktime': avg_blocktime,
@@ -82,12 +81,12 @@ def send_data(node_data):
         ws_connection = connect_to_server()
         ws_connection.send(json.dumps(node_data))
         result = ws_connection.recv()
-        LOG.critical({'message': result})
+        LOG.critical(result)
         ws_connection.close()
     # Not nice, but works for now.
     # pylint: disable=broad-except
     except Exception as exception:
-        LOG.critical({'message': exception})
+        LOG.critical(exception)
 
 
 def provide_data_every(n_seconds, rpc_api):
@@ -100,7 +99,7 @@ def provide_data_every(n_seconds, rpc_api):
             send_data(node_data)
         # pylint: disable=broad-except
         except Exception as exception:
-            LOG.critical({'message': exception})
+            LOG.critical(exception)
 
 
 def main():
