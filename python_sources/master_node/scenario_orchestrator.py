@@ -110,12 +110,14 @@ class ScenarioOrchestrator:
 
     def get_height_after(self, sender):
         while True:
+            sleep(2)
             if sender.getmempoolinfo()['size'] == 0:
                 self.height = self.get_height(sender)
                 return
 
     def is_blocked(self, sender):
         while True:
+            sleep(2)
             if self.get_height(sender) >= self.height:
                 return False
 
