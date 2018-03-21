@@ -3,26 +3,14 @@ instance as well as the remote multichain Instances of the slaves via json-rpc."
 
 from socket import gaierror
 from time import sleep
-import logging
 import sys
 
 import rpyc
 from Savoir import Savoir
 from ..data_acquisition.data_acquisition import connect_to_multichain
+from ..project_logger import set_up_logging
 
-
-def set_up_logging():
-    new_logger = logging.getLogger(__name__)
-    console = logging.StreamHandler()
-    formatter = logging.Formatter('%(levelname)s - %(message)s | In: %(module)s at: %(lineno)d')
-    console.setLevel(logging.INFO)
-    console.setFormatter(formatter)
-    new_logger.setLevel(logging.INFO)
-    new_logger.addHandler(console)
-    return new_logger
-
-
-LOG = set_up_logging()
+LOG = set_up_logging(__name__)
 
 
 class ScenarioOrchestrator:
@@ -46,7 +34,7 @@ class ScenarioOrchestrator:
                 chain_node = Savoir(user, password, "privatemultichain_slavenode_" + str(slave_id),
                                     rpc_port, "bpchain")
                 self.chain_nodes.append(chain_node)
-                LOG.info("Added connection to %d", slave_id)
+                LOG.info("Added connection to slave %d", slave_id)
             except ConnectionRefusedError:
                 unconnected_ids.append(slave_id)
                 LOG.warning("Could not connect to %d. retry later", slave_id)
