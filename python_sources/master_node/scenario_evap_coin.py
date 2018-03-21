@@ -31,5 +31,5 @@ def run_scenario():
 
 
 if __name__ == '__main__':
-    # run_scenario()
+    run_scenario()
     time.sleep(30000)

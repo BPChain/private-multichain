@@ -1,5 +1,5 @@
+"""I set up a logger for a module."""
 import logging
-
 
 def set_up_logging(name):
     new_logger = logging.getLogger(name)
