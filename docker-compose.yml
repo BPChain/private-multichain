@@ -4,11 +4,17 @@ services:
       build: .
       stdin_open: true
       tty: true
+      networks:
+        - multichain-net
       entrypoint: /masterEntry.sh
     slavenode:
       build: .
-      links:
-        - masternode
       stdin_open: true
       tty: true
+      networks:
+        - multichain-net
       entrypoint: /slaveEntry.sh
+
+networks:
+  multichain-net:
+    driver: bridge
