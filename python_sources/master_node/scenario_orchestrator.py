@@ -71,58 +71,62 @@ class ScenarioOrchestrator:
     def issue_assets(self, asset_name, quantity, units, issue_more_allowed):
         self.chain_rpc.issue(self.chain_rpc.getaddresses()[0],
                              {'name': asset_name, 'open': issue_more_allowed}, quantity, units)
-        self.get_height_after(self.chain_rpc)
+        self.update_height(self.chain_rpc)
 
     def issue_more(self, asset_name, quantity):
-        if not self.is_blocked(self.chain_rpc):
-            self.chain_rpc.issuemore(self.chain_rpc.getaddresses()[0], asset_name, quantity)
-            self.get_height_after(self.chain_rpc)
+        self.synchronize_heights(self.chain_rpc)
+        self.chain_rpc.issuemore(self.chain_rpc.getaddresses()[0], asset_name, quantity)
+        self.update_height(self.chain_rpc)
 
     def send_assets(self, sender, recipient, asset_name, quantity):
-        if not self.is_blocked(sender):
-            LOG.info("Send assets from %s to %s", sender, recipient)
-            sender.sendasset(recipient.getaddresses()[0], asset_name, quantity)
-            self.get_height_after(sender)
+        self.synchronize_heights(sender)
+        LOG.info("Send assets from %s to %s", sender, recipient)
+        sender.sendasset(recipient.getaddresses()[0], asset_name, quantity)
+        self.update_height(sender)
 
     def send_assets_to_group(self, sender, recipient_group, asset_name, quantity):
-        if not self.is_blocked(sender):
-            for member in self.groups[recipient_group]:
-                self.send_assets(sender, member, asset_name, quantity)
-            self.get_height_after(sender)
+        self.synchronize_heights(sender)
+        for member in self.groups[recipient_group]:
+            self.send_assets(sender, member, asset_name, quantity)
+        self.update_height(sender)
 
     def revoke_rights(self, group, rights):
-        if not self.is_blocked(self.chain_rpc):
-            for member in self.groups[group]:
-                for right in rights:
-                    self.chain_rpc.revoke(member.getaddresses()[0], right)
-            self.get_height_after(self.chain_rpc)
+        self.synchronize_heights(self.chain_rpc)
+        for member in self.groups[group]:
+            for right in rights:
+                self.chain_rpc.revoke(member.getaddresses()[0], right)
+        self.update_height(self.chain_rpc)
 
     def get_total_balance(self, sender):
         return sender.gettotalbalances()
 
     def get_quantity_of_asset(self, sender, asset_name):
-        if not self.is_blocked(sender):
-            total_balances = self.get_total_balance(sender)
-            for balance in total_balances:
-                if asset_name in balance.values():
-                    return float(balance['qty'])
-            return 0
+        self.synchronize_heights(sender)
+        total_balances = self.get_total_balance(sender)
+        for balance in total_balances:
+            if asset_name in balance.values():
+                return float(balance['qty'])
+        return 0
 
-    def get_height_after(self, sender):
-        while True:
-            sleep(2)
+    def update_height(self, sender):
+        is_updated = False
+        while not is_updated:
             if sender.getmempoolinfo()['size'] == 0:
-                self.height = self.get_height(sender)
-                return
-
-    def is_blocked(self, sender):
-        while True:
+                self.height = self.local_height_from(sender)
+                is_updated = True
             sleep(2)
-            if self.get_height(sender) >= self.height:
-                return False
 
-    def get_height(self, sender):
+    def synchronize_heights(self, sender):
+        is_synced = False
+        while not is_synced:
+            if self.local_height_from(sender) >= self.height:
+                is_synced = True
+            sleep(2)
+
+
+    def local_height_from(self, sender):
         return sender.listblocks('-1')[0]['height']
+
 
 if __name__ == '__main__':
     ScenarioOrchestrator()
