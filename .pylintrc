@@ -127,7 +127,8 @@ disable=print-statement,
         dict-items-not-iterating,
         dict-keys-not-iterating,
         dict-values-not-iterating,
-        no-else-return
+        no-else-return,
+        no-self-use,
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -198,7 +199,6 @@ spelling-store-unknown-words=no
 # List of note tags to take in consideration, separated by a comma.
 notes=FIXME,
       XXX,
-      TODO
 
 
 [TYPECHECK]

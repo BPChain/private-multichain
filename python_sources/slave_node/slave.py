@@ -1,3 +1,5 @@
+"""I send my multichain username and password to a master node so he can control my local
+multichan instance """
 import rpyc
 from ..data_acquisition.data_acquisition import read_user_and_password, read_rpc_port
 
@@ -19,6 +21,6 @@ class SlaveService(rpyc.Service):
 if __name__ == '__main__':
     from rpyc.utils.server import ThreadedServer
 
-    server = ThreadedServer(SlaveService, port=60000)
+    SERVER = ThreadedServer(SlaveService, port=60000)
     print("start slave")
-    server.start()
+    SERVER.start()

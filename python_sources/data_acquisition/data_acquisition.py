@@ -1,3 +1,5 @@
+"""Collect and send data to the api-server."""
+
 import logging
 from configparser import ConfigParser
 import time
@@ -8,8 +10,6 @@ import yaml
 
 from websocket import create_connection, WebSocket
 from Savoir import Savoir
-
-"""Collect and send data to the api-server."""
 
 
 def setup_logging():

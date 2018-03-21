@@ -1,12 +1,11 @@
+"""I Run a scenario with the help of the Scenario Orchestrator"""
 from time import sleep
 import sys
 
 from .scenario_orchestrator import ScenarioOrchestrator
 
-"""Run a scenario with the help of the Scenario Orchestrator"""
-
 if __name__ == '__main__':
-    # todo implement waitable Promisses or similar to wait on transaction completion
+    # Todo: implement waitable Promisses or similar to wait on transaction completion
     NUMBER_OF_SLAVES = int(sys.argv[1]) if len(sys.argv) > 1 else 1
     orchestrator = ScenarioOrchestrator()
     orchestrator.connect_to_slaves(NUMBER_OF_SLAVES)
