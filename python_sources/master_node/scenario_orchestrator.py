@@ -52,7 +52,7 @@ class ScenarioOrchestrator:
                 LOG.warning("Could not connect to %d. retry later", slave_id)
             except gaierror:
                 LOG.warning("Could not resolve node %d. removing id", slave_id)
-            except Exception as unknown_exception:
+            except Exception as unknown_exception:  # pylint: disable=broad-except
                 LOG.error("Something went very wrong: %s", unknown_exception)
                 sleep(10)
 
