@@ -123,7 +123,6 @@ class ScenarioOrchestrator:
                 is_synced = True
             sleep(2)
 
-
     def local_height_from(self, sender):
         return sender.listblocks('-1')[0]['height']
 
