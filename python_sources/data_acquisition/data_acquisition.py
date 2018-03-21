@@ -110,7 +110,7 @@ def main():
     send_period = 10
     setup_logging()
     rpc_api = connect_to_multichain()
-    # provide_data_every(send_period, rpc_api)
+    provide_data_every(send_period, rpc_api)
 
 
 if __name__ == '__main__':
