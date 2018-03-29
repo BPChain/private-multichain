@@ -32,10 +32,10 @@ def run_scenario():
 
 
 if __name__ == '__main__':
-    try:
-        run_scenario()
-    except Exception as e:
-        time.sleep(10000)
-        run_scenario()
-        pass
+    while True:
+        try:
+            run_scenario()
+        except Exception as e:
+            time.sleep(10000)
+            pass
     time.sleep(30000)
