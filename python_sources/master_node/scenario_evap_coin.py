@@ -17,7 +17,8 @@ def run_scenario():
     orchestrator.send_assets_to_group(orchestrator.chain_rpc, 'Students', 'EVAPCoin', 3)
     print(orchestrator.get_quantity_of_asset(orchestrator.groups['Students'][3], 'EVAPCoin'))
     orchestrator.send_assets(orchestrator.groups['Students'][3],
-                             orchestrator.groups['Stores'][2], 'EVAPCoin', 3)
+                             orchestrator.
+                             groups['Stores'][2], 'EVAPCoin', 3)
     orchestrator.send_assets(orchestrator.groups['Students'][4],
                              orchestrator.groups['Stores'][0], 'EVAPCoin', 3)
     print(orchestrator.get_quantity_of_asset(orchestrator.groups['Students'][3], 'EVAPCoin'))
@@ -31,5 +32,10 @@ def run_scenario():
 
 
 if __name__ == '__main__':
-    run_scenario()
+    try:
+        run_scenario()
+    except Exception as e:
+        time.sleep(10000)
+        run_scenario()
+        pass
     time.sleep(30000)
