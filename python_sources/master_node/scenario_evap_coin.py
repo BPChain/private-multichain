@@ -35,7 +35,7 @@ if __name__ == '__main__':
     while True:
         try:
             run_scenario()
-        except Exception as e:
+        except ConnectionRefusedError:
             time.sleep(10000)
             pass
     time.sleep(30000)
