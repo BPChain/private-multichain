@@ -1,17 +1,13 @@
 """I orchestrate a scenario on the multichain. To achieve that I use my local admin Multichain
 instance as well as the remote multichain Instances of the slaves via json-rpc."""
 
-from socket import gaierror
-from time import sleep
 import sys
+from time import sleep
 
-import rpyc
-from Savoir import Savoir
 from ..data_acquisition.data_acquisition import connect_to_multichain
 from ..project_logger import set_up_logging
 
 LOG = set_up_logging(__name__)
-
 
 class ScenarioOrchestrator:
     """I hold all the Savoir instances for remote and my local admin nodes."""
@@ -23,26 +19,6 @@ class ScenarioOrchestrator:
         self.height = 0
         LOG.info("Orchestrator is ready for connections")
 
-    def connect_to_slaves(self, number_of_slaves):
-        sleep(40)
-        unconnected_ids = list(range(1, number_of_slaves + 1))
-        while unconnected_ids:
-            slave_id = unconnected_ids.pop(0)
-            try:
-                connection = rpyc.connect("privatemultichain_slavenode_" + str(slave_id), 60000)
-                user, password, rpc_port = connection.root.get_credentials()
-                chain_node = Savoir(user, password, "privatemultichain_slavenode_" + str(slave_id),
-                                    rpc_port, "bpchain")
-                self.chain_nodes.append(chain_node)
-                LOG.info("Added connection to slave %d", slave_id)
-            except ConnectionRefusedError:
-                unconnected_ids.append(slave_id)
-                LOG.warning("Could not connect to %d. retry later", slave_id)
-            except gaierror:
-                LOG.warning("Could not resolve node %d. removing id", slave_id)
-            except Exception as unknown_exception:  # pylint: disable=broad-except
-                LOG.error("Something went very wrong: %s", unknown_exception)
-                sleep(10)
 
     def grant_rights(self, number, rights, label):
         if number > len(self.chain_nodes):
