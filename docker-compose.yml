@@ -7,6 +7,8 @@ services:
       networks:
         - multichain-net
       entrypoint: /masterEntry.sh
+      environment:
+        TARGET_HOSTNAME: ${HOSTNAME}
     slavenode:
       build: .
       stdin_open: true
@@ -14,6 +16,8 @@ services:
       networks:
         - multichain-net
       entrypoint: /slaveEntry.sh
+      environment:
+        TARGET_HOSTNAME: ${HOSTNAME}
 
 networks:
   multichain-net:
