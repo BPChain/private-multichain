@@ -19,5 +19,6 @@ if __name__ == '__main__':
     user, password = read_user_and_password()
     rpc_port = read_rpc_port()
     chainnode = connection.root.set_chainnodes(user, password, rpc_port)
-    sleep(20)
+    while True:
+        sleep(20)
     connection.root.close(chainnode)

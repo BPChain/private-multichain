@@ -9,6 +9,7 @@ from ..project_logger import set_up_logging
 
 LOG = set_up_logging(__name__)
 
+
 class ScenarioOrchestrator:
     """I hold all the Savoir instances for remote and my local admin nodes."""
 
@@ -18,7 +19,6 @@ class ScenarioOrchestrator:
         self.groups = {}
         self.height = 0
         LOG.info("Orchestrator is ready for connections")
-
 
     def grant_rights(self, number, rights, label):
         if number > len(self.chain_nodes):
@@ -50,9 +50,10 @@ class ScenarioOrchestrator:
 
     def send_assets_to_group(self, sender, recipient_group, asset_name, quantity):
         self.synchronize_heights(sender)
-        for member in self.groups[recipient_group]:
-            self.send_assets(sender, member, asset_name, quantity)
-        self.update_height(sender)
+        if recipient_group in self.groups.keys():
+            for member in self.groups[recipient_group]:
+                self.send_assets(sender, member, asset_name, quantity)
+            self.update_height(sender)
 
     def revoke_rights(self, group, rights):
         self.synchronize_heights(self.chain_rpc)

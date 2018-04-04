@@ -1,5 +1,4 @@
 """I Run a scenario with the help of the Scenario Orchestrator"""
-import sys
 import time
 from threading import Thread
 
@@ -12,10 +11,12 @@ LOG = set_up_logging(__name__)
 
 def run_scenario():
     """EVAPCoin Scenario"""
-    number_of_slaves = int(sys.argv[1]) if len(sys.argv) > 1 else 1
     orchestrator = ScenarioOrchestrator()
-    orchestrator.grant_rights(5, ['receive', 'send'], 'Students')
-    orchestrator.grant_rights(5, ['receive'], 'Stores')
+    for i in len(m.chainnodes):
+        if i % 2 == 0:
+            orchestrator.grant_rights(1, ['receive', 'send'], 'Students')
+        else:
+            orchestrator.grant_rights(1, ['receive'], 'Stores')
     orchestrator.issue_assets("EVAPCoin", 100, 1, True)
     orchestrator.issue_more('EVAPCoin', 20)
     orchestrator.send_assets_to_group(orchestrator.chain_rpc, 'Students', 'EVAPCoin', 3)

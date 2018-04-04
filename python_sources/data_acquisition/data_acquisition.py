@@ -1,7 +1,6 @@
 """Collect and send data to the api-server."""
 
 import json
-import socket
 import time
 from configparser import ConfigParser
 from typing import Tuple
@@ -42,7 +41,7 @@ def get_node_data(chain_node, last_block_number):
     is_mining = 0 if hashespersec == 0 else 1  # TODO: replace with 'correct' request
     avg_blocktime, new_last_block_number = calculate_avg_blocktime(chain_node, last_block_number)
     LOG.info({difficulty, hashespersec, is_mining, avg_blocktime})
-    return {'target': socket.gethostname(), 'chainName': 'multichain', 'hostId': chain_node.getaddresses()[0],
+    return {'target': 'fsoc', 'chainName': 'multichain', 'hostId': chain_node.getaddresses()[0],
             'hashrate': hashespersec, 'gasPrice': -1,
             'avgDifficulty': difficulty, 'avgBlocktime': avg_blocktime,
             'isMining': is_mining}, new_last_block_number
@@ -91,13 +90,16 @@ def send_data(node_data):
 def provide_data_every(n_seconds, rpc_api):
     last_block_number = 0
     while True:
-        time.sleep(n_seconds)
+        LOG.info("###########Diggawemadeit############")
         try:
+            LOG.info("###########hola############")
+            time.sleep(n_seconds)
             node_data, last_block_number = get_node_data(rpc_api, last_block_number)
             LOG.info(node_data)
             send_data(node_data)
         # pylint: disable=broad-except
         except Exception as exception:
+            LOG.info("###########ciao############")
             LOG.critical(exception)
 
 
