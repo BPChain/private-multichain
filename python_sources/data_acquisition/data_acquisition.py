@@ -80,7 +80,7 @@ def send_data(node_data):
         ws_connection = connect_to_server()
         ws_connection.send(json.dumps(node_data))
         result = ws_connection.recv()
-        LOG.critical(result)
+        LOG.info(result)
         ws_connection.close()
     # Not nice, but works for now.
     # pylint: disable=broad-except
@@ -91,23 +91,20 @@ def send_data(node_data):
 def provide_data_every(n_seconds, rpc_api, hostname):
     last_block_number = 0
     while True:
-        LOG.info("###########Diggawemadeit############")
         try:
-            LOG.info("###########hola############")
             time.sleep(n_seconds)
             node_data, last_block_number = get_node_data(rpc_api, last_block_number, hostname)
             LOG.info(node_data)
             send_data(node_data)
         # pylint: disable=broad-except
         except Exception as exception:
-            LOG.info("###########ciao############")
             LOG.critical(exception)
 
 
 def main():
     hostname = os.environ["TARGET_HOSTNAME"]
     time.sleep(15)  # sleep so we hopefully mine a block. TODO: replace with safe implementation
-    send_period = 10
+    send_period = 100
     rpc_api = connect_to_multichain()
     provide_data_every(send_period, rpc_api, hostname)
 
