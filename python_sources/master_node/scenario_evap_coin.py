@@ -41,8 +41,9 @@ def run_scenario(iteration_time):
     """EVAPCoin Scenario"""
     orchestrator = ScenarioOrchestrator()
     orchestrator.groups['Students']= []
+    orchestrator.issue_assets('EVAPCoin', 200, 1, True)
     while True:
-        orchestrator.issue_assets('EVAPCoin', 100, 1, True)
+        orchestrator.issue_more('EVAPCoin', 50)
         check_chainnodes(orchestrator)
         time.sleep(iteration_time)
         transfer_assets(orchestrator)
