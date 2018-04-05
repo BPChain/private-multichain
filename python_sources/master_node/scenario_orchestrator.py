@@ -1,13 +1,51 @@
 """I orchestrate a scenario on the multichain. To achieve that I use my local admin Multichain
 instance as well as the remote multichain Instances of the slaves via json-rpc."""
 
-import sys
+import json
+from http.server import BaseHTTPRequestHandler
+from io import BytesIO
 from time import sleep
+
+from Savoir import Savoir
 
 from ..data_acquisition.data_acquisition import connect_to_multichain
 from ..project_logger import set_up_logging
 
 LOG = set_up_logging(__name__)
+
+test = []
+
+
+def set_chainnodes(credentials):
+    global test
+    user = credentials['user']
+    password = credentials['password']
+    rpc_port = credentials['rpc_port']
+    host = credentials['host']
+    chain_node = Savoir(user, password, host, rpc_port, "bpchain")
+    LOG.info('######')
+    LOG.info("privatemultichain_slavenode_" + str(len(test) + 1))
+    test.append(chain_node)
+    LOG.info("Added connection to slave %d", len(test))
+
+
+class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
+
+    def do_POST(self):
+        content_length = int(self.headers['Content-Length'])
+        body = self.rfile.read(content_length)
+        self.send_response(200)
+        self.end_headers()
+        response = BytesIO()
+        response.write(b'This is POST request. ')
+        response.write(b'Received: ')
+        response.write(body)
+        self.wfile.write(response.getvalue())
+        set_chainnodes(json.loads(body.decode('utf-8')))
+
+
+
+
 
 
 class ScenarioOrchestrator:
@@ -20,17 +58,19 @@ class ScenarioOrchestrator:
         self.height = 0
         LOG.info("Orchestrator is ready for connections")
 
-    def grant_rights(self, number, rights, label):
-        if number > len(self.chain_nodes):
-            LOG.error("Not enough Nodes. Requested %d had %d", number, len(self.chain_nodes))
-            sys.exit(1)
-        else:
+    def grant_rights(self, chain_node, rights, label):
+        for right in rights:
+            print('blabbbon')
+            print(self.chain_rpc)
+            print(chain_node)
+            print(self.chain_rpc.getaddresses()[0])
+            print(chain_node.getaddresses()[0])
+
+            print('blobbbon')
+            self.chain_rpc.grant(chain_node.getaddresses()[0], right)
+        if label not in self.groups:
             self.groups[label] = []
-            for _ in range(number):
-                chain_node = self.chain_nodes.pop(0)
-                for right in rights:
-                    self.chain_rpc.grant(chain_node.getaddresses()[0], right)
-                self.groups[label].append(chain_node)
+        self.groups[label].append(chain_node)
 
     def issue_assets(self, asset_name, quantity, units, issue_more_allowed):
         self.chain_rpc.issue(self.chain_rpc.getaddresses()[0],
@@ -54,6 +94,11 @@ class ScenarioOrchestrator:
             for member in self.groups[recipient_group]:
                 self.send_assets(sender, member, asset_name, quantity)
             self.update_height(sender)
+
+    def revoke_rights(self, chain_node, rights):
+        self.synchronize_heights(self.chain_rpc)
+        for right in rights:
+            self.chain_rpc.revoke(chain_node.getaddresses()[0], right)
 
     def revoke_rights(self, group, rights):
         self.synchronize_heights(self.chain_rpc)

@@ -21,6 +21,7 @@ class MasterService(rpyc.Service):
 
     def exposed_set_chainnodes(self, user, password, rpc_port):
         global chainnodes
+
         chain_node = Savoir(user, password, "privatemultichain_slavenode_" + str(len(chainnodes)+ 1), rpc_port, "bpchain")
         chainnodes.append(chain_node)
         LOG.info("Added connection to slave %d", len(chainnodes))
