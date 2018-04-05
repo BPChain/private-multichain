@@ -1,8 +1,8 @@
 """I Run a scenario with the help of the Scenario Orchestrator"""
 
-import time
 from http.server import HTTPServer
 from threading import Thread
+from time import sleep
 
 from .http_server import SimpleHTTPRequestHandler, slave_nodes
 from .scenario_orchestrator import ScenarioOrchestrator
@@ -11,15 +11,18 @@ from ..project_logger import set_up_logging
 LOG = set_up_logging(__name__)
 
 
-def check_chainnodes(orchestrator):
-    chainnodes = set(slave_nodes)
+def check_slave_nodes(orchestrator):
     students = set(orchestrator.groups['Students'])
-    has_joined(list(chainnodes-students), orchestrator)
+    has_joined(list(set(slave_nodes)-students), orchestrator)
+
 
 def has_joined(need_rights, orchestrator):
     for chain_node in need_rights:
-        print(chain_node)
-        orchestrator.grant_rights(chain_node, ['receive', 'send'], 'Students')
+        try:
+            orchestrator.grant_rights(chain_node, ['receive', 'send'], 'Students')
+        except Exception as error:
+            has_left(chain_node, orchestrator)
+            LOG.critical(error)
 
 
 def has_left(left_node, orchestrator):
@@ -37,16 +40,16 @@ def transfer_assets(orchestrator):
             LOG.critical(error)
 
 
-
 def run_scenario(iteration_time):
     """EVAPCoin Scenario"""
+    sleep(5)
     orchestrator = ScenarioOrchestrator()
     orchestrator.groups['Students']= []
     orchestrator.issue_assets('EVAPCoin', 200, 1, True)
     while True:
         orchestrator.issue_more('EVAPCoin', 50)
-        check_chainnodes(orchestrator)
-        time.sleep(iteration_time)
+        check_slave_nodes(orchestrator)
+        sleep(iteration_time)
         transfer_assets(orchestrator)
 
 
