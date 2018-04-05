@@ -15,9 +15,6 @@ def check_chainnodes(orchestrator):
     chainnodes = set(slave_nodes)
     students = set(orchestrator.groups['Students'])
     has_joined(list(chainnodes-students), orchestrator)
-    students = set(orchestrator.groups['Students'])
-    has_left(list(students-chainnodes), orchestrator)
-
 
 def has_joined(need_rights, orchestrator):
     for chain_node in need_rights:
@@ -25,16 +22,20 @@ def has_joined(need_rights, orchestrator):
         orchestrator.grant_rights(chain_node, ['receive', 'send'], 'Students')
 
 
-def has_left(has_left, orchestrator):
-    for chain_node in has_left:
-        orchestrator.revoke_rights(chain_node, ['receive', 'send'])
-        orchestrator.groups['Students'].remove(chain_node)
+def has_left(left_node, orchestrator):
+    orchestrator.groups['Students'].remove(left_node)
+    slave_nodes.remove(left_node)
 
 
 def transfer_assets(orchestrator):
     for student in orchestrator.groups['Students']:
+        try:
             orchestrator.send_assets(orchestrator.chain_rpc, student, 'EVAPCoin', 1)
             orchestrator.send_assets(student, orchestrator.chain_rpc, 'EVAPCoin', 1)
+        except Exception as error:
+            has_left(student, orchestrator)
+            LOG.critical(error)
+
 
 
 def run_scenario(iteration_time):
