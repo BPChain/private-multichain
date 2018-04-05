@@ -54,7 +54,7 @@ class ScenarioOrchestrator:
         for right in rights:
             self.chain_rpc.revoke(chain_node.getaddresses()[0], right)
 
-    def revoke_rights(self, group, rights):
+    def revoke_rights_from_group(self, group, rights):
         self.synchronize_heights(self.chain_rpc)
         for member in self.groups[group]:
             for right in rights:

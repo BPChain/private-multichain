@@ -20,11 +20,11 @@ def send_credentials():
     headers = {'Content-type': 'application/json',
                'Accept': 'application/json'}
     user, password, rpc_port = get_credentials()
-    foo = {'user': user,
-           'password': password,
-           'host': socket.gethostbyname(socket.gethostname()),
-           'rpc_port': rpc_port}
-    json_data = json.dumps(foo)
+    credentials = {'user': user,
+                   'password': password,
+                   'host': socket.gethostbyname(socket.gethostname()),
+                   'rpc_port': rpc_port}
+    json_data = json.dumps(credentials)
 
     conn.request('POST', '/post', json_data, headers)
 
