@@ -1,4 +1,8 @@
-"""I Run a scenario with the help of the Scenario Orchestrator"""
+"""
+DEPRECATED
+DEPRECATED
+DEPRECATED
+I Run a scenario with the help of the Scenario Orchestrator"""
 
 from http.server import HTTPServer
 from threading import Thread
@@ -7,6 +11,7 @@ from time import sleep
 from .http_server import SimpleHTTPRequestHandler, SLAVE_NODES
 from .scenario_orchestrator import ScenarioOrchestrator
 from ..project_logger import set_up_logging
+
 
 LOG = set_up_logging(__name__)
 
