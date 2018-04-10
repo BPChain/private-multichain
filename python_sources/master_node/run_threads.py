@@ -1,3 +1,5 @@
+"""I start all the threads necessary to control the slave nodes and receive info from the backend
+controller"""
 from threading import Thread
 
 from ..project_logger import set_up_logging

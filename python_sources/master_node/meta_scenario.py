@@ -1,3 +1,5 @@
+"""I offer a function that is run in a Thread to orchestrate the nodes"""
+
 from queue import LifoQueue
 from threading import Lock
 from time import sleep
@@ -23,5 +25,5 @@ def run_scenario():
         sleep(current_settings['frequency'])
         for slave in current_slaves:
             LOG.info("in loop")
-            LOG.info("settings %s slaves %s",current_settings, current_slaves)
+            LOG.info("settings %s slaves %s", current_settings, current_slaves)
             # slave.sendAsset(CURRENT_SETTINGS['size'])

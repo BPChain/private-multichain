@@ -13,6 +13,7 @@ SLAVE_NODES = []
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
+    """I handle requests form the slaves who send their user data"""
 
     # pylint: disable=invalid-name
     def do_POST(self):
@@ -23,6 +24,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.add_slave_nodes(json.loads(body.decode('utf-8')))
 
     def add_slave_nodes(self, credentials):
+        # pylint: disable=global-statement
         global SLAVE_NODES
         user = credentials['user']
         password = credentials['password']
