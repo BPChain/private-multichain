@@ -49,10 +49,10 @@ class ScenarioOrchestrator:
 
     def unsafe_multiple_meta_transactions(self, slaves, size_bytes):
         for slave in slaves:
-            self.synchronize_heights(slave)
             # TODO DEFINE UNIFORM PAYLOAD SIZE WITH ETHERUM
             filler_data = codecs.decode(b2a_hex(urandom(size_bytes)))
             answer = slave.sendwithmetadata(slave.getaddresses()[0], {'meta': 1}, filler_data)
+            LOG.info("response %s", answer)
 
     def multiple_meta_transactions(self, slaves, size_bytes):
         for slave in slaves:
