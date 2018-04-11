@@ -5,6 +5,9 @@ from binascii import b2a_hex
 from os import urandom
 from time import sleep
 
+from requests.exceptions import ConnectionError
+from urllib3.exceptions import MaxRetryError, NewConnectionError
+
 from ..data_acquisition.data_acquisition import connect_to_multichain
 from ..project_logger import set_up_logging
 
@@ -22,7 +25,7 @@ class ScenarioOrchestrator:
 
     def prepare_slaves(self, slaves):
         for slave in slaves:
-            self.grant_rights(slave, ['receive', 'send'], 'slave')
+            self.grant_rights(slave, ['receive', 'send', 'mine'], 'slave')
         self.issue_meta_asset_to(slaves)
         LOG.info('prepared slaves %s', slaves)
 
@@ -48,11 +51,18 @@ class ScenarioOrchestrator:
         LOG.info('issued meta asset to %s', recipients)
 
     def unsafe_multiple_meta_transactions(self, slaves, size_bytes):
+        unreachable_slaves = []
         for slave in slaves:
             # TODO DEFINE UNIFORM PAYLOAD SIZE WITH ETHERUM
             filler_data = codecs.decode(b2a_hex(urandom(size_bytes)))
-            answer = slave.sendwithmetadata(slave.getaddresses()[0], {'meta': 1}, filler_data)
-            LOG.info("response %s", answer)
+            try:
+                answer = slave.sendwithmetadata(slave.getaddresses()[0], {'meta': 1}, filler_data)
+                LOG.info("response %s", answer)
+            except (ConnectionError, MaxRetryError, NewConnectionError) as error:
+                LOG.warn(error)
+                unreachable_slaves.append(slave)
+                LOG.warn("unreachable: %s", unreachable_slaves)
+        return unreachable_slaves
 
     def multiple_meta_transactions(self, slaves, size_bytes):
         for slave in slaves:

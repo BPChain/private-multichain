@@ -103,7 +103,7 @@ def provide_data_every(n_seconds, rpc_api, hostname):
 
 def main():
     hostname = os.environ["TARGET_HOSTNAME"]
-    time.sleep(150000)  # sleep so we hopefully mine a block. TODO: replace with safe
+    time.sleep(15)  # sleep so we hopefully mine a block. TODO: replace with safe
     # implementation
     send_period = 100
     rpc_api = connect_to_multichain()

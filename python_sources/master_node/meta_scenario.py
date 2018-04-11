@@ -33,4 +33,6 @@ def run_scenario():
         if not SETTINGS_SYNC.empty():
             current_settings = SETTINGS_SYNC.get()
         sleep(current_settings['frequency'])
-        orchestrator.unsafe_multiple_meta_transactions(current_slaves, current_settings['payloadSize'])
+        unreachable_slaves = orchestrator.unsafe_multiple_meta_transactions(current_slaves,
+                                                                    current_settings['payloadSize'])
+        current_slaves = set(current_slaves) - set(unreachable_slaves)
