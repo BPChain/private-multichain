@@ -1,6 +1,8 @@
 """I orchestrate a scenario on the multichain. To achieve that I use my local admin Multichain
 instance as well as the remote multichain Instances of the slaves via json-rpc."""
-
+import codecs
+from binascii import b2a_hex
+from os import urandom
 from time import sleep
 
 from ..data_acquisition.data_acquisition import connect_to_multichain
@@ -45,9 +47,23 @@ class ScenarioOrchestrator:
             self.send_assets(self.chain_rpc, recipient, 'meta', total_units/len(recipients))
         LOG.info('issued meta asset to %s', recipients)
 
-    def send_meta(self, slave):
-        self.send_assets(slave, slave, 'meta', 1)
-        LOG.info('send asset from %s', slave)
+    def unsafe_multiple_meta_transactions(self, slaves, size_bytes):
+        for slave in slaves:
+            self.synchronize_heights(slave)
+            # TODO DEFINE UNIFORM PAYLOAD SIZE WITH ETHERUM
+            filler_data = codecs.decode(b2a_hex(urandom(size_bytes)))
+            answer = slave.sendwithmetadata(slave.getaddresses()[0], {'meta': 1}, filler_data)
+
+    def multiple_meta_transactions(self, slaves, size_bytes):
+        for slave in slaves:
+            self.synchronize_heights(slave)
+            # TODO DEFINE UNIFORM PAYLOAD SIZE WITH ETHERUM
+            filler_data = codecs.decode(b2a_hex(urandom(size_bytes)))
+            answer = slave.sendwithmetadata(slave.getaddresses()[0], {'meta': 1}, filler_data)
+            LOG.info("response %s", answer)
+        for slave in slaves:
+            self.synchronize_heights(slave)
+
 
     def issue_more(self, asset_name, quantity):
         self.synchronize_heights(self.chain_rpc)

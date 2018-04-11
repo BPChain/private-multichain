@@ -16,7 +16,7 @@ LOG = set_up_logging(__name__)
 
 def run_scenario():
     current_slaves = []
-    current_settings = {'frequency': 10, 'payloadSize': 0}
+    current_settings = {'frequency': 10, 'payloadSize': 10}
     orchestrator = ScenarioOrchestrator()
     orchestrator.issue_assets('meta', 1, 1, True)
     while True:
@@ -33,5 +33,4 @@ def run_scenario():
         if not SETTINGS_SYNC.empty():
             current_settings = SETTINGS_SYNC.get()
         sleep(current_settings['frequency'])
-        for slave in current_slaves:
-            orchestrator.send_meta(slave)
+        orchestrator.unsafe_multiple_meta_transactions(current_slaves, current_settings['payloadSize'])
