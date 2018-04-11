@@ -31,10 +31,10 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         host = credentials['host']
         rpc_port = credentials['rpc_port']
         chain_node = Savoir(user, password, host, rpc_port, "bpchain")
-        SLAVE_NODES += [chain_node]
+        SLAVE_NODES = SLAVE_NODES + [chain_node]
         LOG.info("Added connection to slave %d", len(SLAVE_NODES))
         LOG.info(SLAVE_NODES)
-        SLAVES_SYNC.put(SLAVE_NODES)
+        SLAVES_SYNC.put([slave for slave in SLAVE_NODES])
 
 
 

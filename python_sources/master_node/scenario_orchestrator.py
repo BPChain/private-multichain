@@ -18,6 +18,13 @@ class ScenarioOrchestrator:
         self.groups = {}
         self.height = 0
 
+    def prepare_slaves(self, slaves):
+        for slave in slaves:
+            self.grant_rights(slave, ['receive', 'send'], 'slave')
+        self.issue_meta_asset_to(slaves)
+        LOG.info('prepared slaves %s', slaves)
+
+
     def grant_rights(self, chain_node, rights, label):
         self.synchronize_heights(chain_node)
         for right in rights:
@@ -30,6 +37,17 @@ class ScenarioOrchestrator:
         self.chain_rpc.issue(self.chain_rpc.getaddresses()[0],
                              {'name': asset_name, 'open': issue_more_allowed}, quantity, units)
         self.update_height(self.chain_rpc)
+
+    def issue_meta_asset_to(self, recipients):
+        total_units = 10 * len(recipients)
+        self.issue_more('meta', total_units)
+        for recipient in recipients:
+            self.send_assets(self.chain_rpc, recipient, 'meta', total_units/len(recipients))
+        LOG.info('issued meta asset to %s', recipients)
+
+    def send_meta(self, slave):
+        self.send_assets(slave, slave, 'meta', 1)
+        LOG.info('send asset from %s', slave)
 
     def issue_more(self, asset_name, quantity):
         self.synchronize_heights(self.chain_rpc)
@@ -48,6 +66,8 @@ class ScenarioOrchestrator:
             for member in self.groups[recipient_group]:
                 self.send_assets(sender, member, asset_name, quantity)
             self.update_height(sender)
+
+
 
     def revoke_rights(self, chain_node, rights):
         self.synchronize_heights(self.chain_rpc)
@@ -88,7 +108,13 @@ class ScenarioOrchestrator:
             sleep(2)
 
     def local_height_from(self, sender):
-        return sender.listblocks('-1')[0]['height']
+        successful = False
+        while not successful:
+            try:
+                return sender.listblocks('-1')[0]['height']
+            except (IndexError, KeyError) as error:
+                LOG.warn(error)
+                sleep(5)
 
 
 if __name__ == '__main__':
