@@ -7,7 +7,7 @@ services:
       networks:
         - multichain-net
       ports:
-        - "20000:20000"
+        - "21000:21000"
       entrypoint: /masterEntry.sh
       environment:
         TARGET_HOSTNAME: ${HOSTNAME}
