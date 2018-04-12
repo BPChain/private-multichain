@@ -7,7 +7,6 @@ from time import sleep
 from .scenario_orchestrator import ScenarioOrchestrator
 from ..project_logger import set_up_logging
 
-
 SLAVES_SYNC = Queue()
 SETTINGS_SYNC = Queue()
 
@@ -32,7 +31,9 @@ def run_scenario():
                 orchestrator.prepare_slaves(new_slaves)
         if not SETTINGS_SYNC.empty():
             current_settings = SETTINGS_SYNC.get()
+        # Warning Frequency is Period, dohh!
         sleep(current_settings['frequency'])
         unreachable_slaves = orchestrator.unsafe_multiple_meta_transactions(current_slaves,
-                                                                    current_settings['payloadSize'])
+                                                                            current_settings[
+                                                                                'payloadSize'])
         current_slaves = set(current_slaves) - set(unreachable_slaves)
