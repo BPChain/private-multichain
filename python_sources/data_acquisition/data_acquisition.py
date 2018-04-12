@@ -51,17 +51,20 @@ def get_node_data(chain_node, last_block_number, hostname):
             'isMining': is_mining}, new_last_block_number
 
 
-def calculate_avg_blocksize(chain_node, last_block_number):
+def calculate_avg_blocksize(chain_node, last_block_number) -> float:
     newest_block_number = chain_node.getblockchaininfo()['blocks']
     if last_block_number < newest_block_number:
-        sizes = [chain_node.getblock(block_number)['size'] for block_number in
+        sizes = [chain_node.getblock(str(block_number))['size'] for block_number in
                  range(last_block_number, newest_block_number + 1)]
+        LOG.info('!!!--------Sizes %s', sizes)
         return mean(sizes)
     else:
+        if last_block_number == 0:
+            return 0
         return chain_node.getblock(last_block_number)['size']
 
 
-def calculate_avg_blocktime(chain_node, last_block_number):
+def calculate_avg_blocktime(chain_node, last_block_number) -> Tuple[float, int]:
     newest_block_number = chain_node.getblockchaininfo()['blocks']
     newest_unix_time = time.time()
     if last_block_number < newest_block_number:
@@ -69,7 +72,7 @@ def calculate_avg_blocktime(chain_node, last_block_number):
         delta_blocks = newest_block_number - last_block_number
     else:
         if last_block_number == 0:
-            return 0
+            return 0, 0
         old_unix_time = chain_node.getblock(str(last_block_number - 1))['time']
         delta_blocks = 1
     delta_time = newest_unix_time - old_unix_time
