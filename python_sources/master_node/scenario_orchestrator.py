@@ -4,6 +4,7 @@ import codecs
 from binascii import b2a_hex
 from os import urandom
 from time import sleep
+from json.decoder import JSONDecodeError
 
 from requests.exceptions import ConnectionError
 from urllib3.exceptions import MaxRetryError, NewConnectionError
@@ -39,8 +40,9 @@ class ScenarioOrchestrator:
         self.groups[label].append(chain_node)
 
     def issue_assets(self, asset_name, quantity, units, issue_more_allowed):
-        self.chain_rpc.issue(self.chain_rpc.getaddresses()[0],
+        result = self.chain_rpc.issue(self.chain_rpc.getaddresses()[0],
                              {'name': asset_name, 'open': issue_more_allowed}, quantity, units)
+        LOG.info('issued assets %s', result)
         self.update_height(self.chain_rpc)
 
     def issue_meta_asset_to(self, recipients):
@@ -48,7 +50,7 @@ class ScenarioOrchestrator:
         self.issue_more('meta', total_units)
         for recipient in recipients:
             self.send_assets(self.chain_rpc, recipient, 'meta', total_units/len(recipients))
-        LOG.info('issued meta asset to %s', recipients)
+        LOG.info('issued meta asset to %s ', recipients)
 
     def unsafe_multiple_meta_transactions(self, slaves, size_bytes):
         unreachable_slaves = []
@@ -57,7 +59,7 @@ class ScenarioOrchestrator:
             filler_data = codecs.decode(b2a_hex(urandom(size_bytes)))
             try:
                 answer = slave.sendwithmetadata(slave.getaddresses()[0], {'meta': 1}, filler_data)
-                LOG.info("response %s", answer)
+                LOG.info("Transaction ID %s", answer)
             except (ConnectionError, MaxRetryError, NewConnectionError) as error:
                 LOG.warn(error)
                 unreachable_slaves.append(slave)
@@ -138,7 +140,7 @@ class ScenarioOrchestrator:
         while not successful:
             try:
                 return sender.listblocks('-1')[0]['height']
-            except (IndexError, KeyError) as error:
+            except (IndexError, KeyError, JSONDecodeError) as error:
                 LOG.warn(error)
                 sleep(5)
 

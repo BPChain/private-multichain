@@ -9,7 +9,7 @@ from .meta_scenario import SLAVES_SYNC
 from ..project_logger import set_up_logging
 
 LOG = set_up_logging(__name__)
-SLAVE_NODES = []
+_SLAVE_NODES = []
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -25,17 +25,27 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
     def add_slave_nodes(self, credentials):
         # pylint: disable=global-statement
-        global SLAVE_NODES
+        global _SLAVE_NODES
+        unreachables = [slave for slave in _SLAVE_NODES if not self.is_reachable(slave)]
         user = credentials['user']
         password = credentials['password']
         host = credentials['host']
         rpc_port = credentials['rpc_port']
         chain_node = Savoir(user, password, host, rpc_port, "bpchain")
-        SLAVE_NODES = SLAVE_NODES + [chain_node]
-        LOG.info("Added connection to slave %d", len(SLAVE_NODES))
-        LOG.info(SLAVE_NODES)
-        SLAVES_SYNC.put([slave for slave in SLAVE_NODES])
+        _SLAVE_NODES = [slave for slave in _SLAVE_NODES if slave not in unreachables] + [chain_node]
+        LOG.info("Added connection to slave %d", len(_SLAVE_NODES))
+        LOG.info(_SLAVE_NODES)
+        SLAVES_SYNC.put(_SLAVE_NODES)
 
+
+    def is_reachable(self, slave: Savoir):
+        try:
+            slave.getinfo()
+            return True
+        # pylint: disable=broad-exception
+        except Exception as error:
+            LOG.warn('cannot reach %s. Error: %s Removing...', slave, error)
+            return False
 
 
 def start_slave_server():
