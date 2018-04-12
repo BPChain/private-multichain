@@ -41,8 +41,7 @@ def get_node_data(chain_node, last_block_number, hostname):
     difficulty = float(chain_node.getmininginfo()['difficulty'])
     hashespersec = int(chain_node.getmininginfo()['hashespersec'])
     is_mining = 0 if hashespersec == 0 else 1  # TODO: replace with 'correct' request
-    # avg_blocksize = calculate_avg_blocksize(chain_node,last_block_number)
-    avg_blocksize = 1
+    avg_blocksize = calculate_avg_blocksize(chain_node,last_block_number)
     avg_blocktime, new_last_block_number = calculate_avg_blocktime(chain_node, last_block_number)
     LOG.info({difficulty, hashespersec, is_mining, avg_blocktime})
     # TODO include blockSize
@@ -62,7 +61,8 @@ def calculate_avg_blocksize(chain_node, last_block_number) -> float:
     else:
         if last_block_number == 0:
             return 0
-        return chain_node.getblock(last_block_number)['size']
+        LOG.info('No new blocks using last available block size')
+        return chain_node.getblock(str(last_block_number))['size']
 
 
 def calculate_avg_blocktime(chain_node, last_block_number) -> Tuple[float, int]:
@@ -115,7 +115,7 @@ def provide_data_every(n_seconds, rpc_api, hostname):
             send_data(node_data)
         # pylint: disable=broad-except
         except Exception as exception:
-            LOG.critical(exception)
+            LOG.error(exception)
 
 
 def main():
