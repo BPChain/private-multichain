@@ -6,7 +6,7 @@ from os import urandom
 from time import sleep
 from json.decoder import JSONDecodeError
 
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError as RQConnectionError
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 from ..data_acquisition.data_acquisition import connect_to_multichain
@@ -30,7 +30,6 @@ class ScenarioOrchestrator:
         self.issue_meta_asset_to(slaves)
         LOG.info('prepared slaves %s', slaves)
 
-
     def grant_rights(self, chain_node, rights, label):
         self.synchronize_heights(chain_node)
         for right in rights:
@@ -41,7 +40,8 @@ class ScenarioOrchestrator:
 
     def issue_assets(self, asset_name, quantity, units, issue_more_allowed):
         result = self.chain_rpc.issue(self.chain_rpc.getaddresses()[0],
-                             {'name': asset_name, 'open': issue_more_allowed}, quantity, units)
+                                      {'name': asset_name, 'open': issue_more_allowed}, quantity,
+                                      units)
         LOG.info('issued assets %s', result)
         self.update_height(self.chain_rpc)
 
@@ -49,10 +49,11 @@ class ScenarioOrchestrator:
         total_units = 10 * len(recipients)
         self.issue_more('meta', total_units)
         for recipient in recipients:
-            self.send_assets(self.chain_rpc, recipient, 'meta', total_units/len(recipients))
+            self.send_assets(self.chain_rpc, recipient, 'meta', total_units / len(recipients))
         LOG.info('issued meta asset to %s ', recipients)
 
-    def unsafe_multiple_meta_transactions(self, slaves, size_bytes):
+    def multiple_meta_transactions(self, slaves, size_bytes):
+        """Warning: I might not be safe because I do not wait for transactions to complete"""
         unreachable_slaves = []
         for slave in slaves:
             # TODO DEFINE UNIFORM PAYLOAD SIZE WITH ETHERUM
@@ -60,21 +61,11 @@ class ScenarioOrchestrator:
             try:
                 answer = slave.sendwithmetadata(slave.getaddresses()[0], {'meta': 1}, filler_data)
                 LOG.info("Transaction ID %s", answer)
-            except (ConnectionError, MaxRetryError, NewConnectionError) as error:
-                LOG.warn(error)
+            except (ConnectionError, RQConnectionError, MaxRetryError, NewConnectionError) as error:
+                LOG.warning(error)
                 unreachable_slaves.append(slave)
-                LOG.warn("unreachable: %s", unreachable_slaves)
+                LOG.warning("unreachable: %s", unreachable_slaves)
         return unreachable_slaves
-
-    def multiple_meta_transactions(self, slaves, size_bytes):
-        for slave in slaves:
-            self.synchronize_heights(slave)
-            # TODO DEFINE UNIFORM PAYLOAD SIZE WITH ETHERUM
-            filler_data = codecs.decode(b2a_hex(urandom(size_bytes)))
-            answer = slave.sendwithmetadata(slave.getaddresses()[0], {'meta': 1}, filler_data)
-            LOG.info("response %s", answer)
-        for slave in slaves:
-            self.synchronize_heights(slave)
 
 
     def issue_more(self, asset_name, quantity):
@@ -94,8 +85,6 @@ class ScenarioOrchestrator:
             for member in self.groups[recipient_group]:
                 self.send_assets(sender, member, asset_name, quantity)
             self.update_height(sender)
-
-
 
     def revoke_rights(self, chain_node, rights):
         self.synchronize_heights(self.chain_rpc)
@@ -141,7 +130,7 @@ class ScenarioOrchestrator:
             try:
                 return sender.listblocks('-1')[0]['height']
             except (IndexError, KeyError, JSONDecodeError) as error:
-                LOG.warn(error)
+                LOG.warning(error)
                 sleep(5)
 
 

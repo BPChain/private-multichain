@@ -42,9 +42,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         try:
             slave.getinfo()
             return True
-        # pylint: disable=broad-exception
+        #pylint: disable=broad-except
         except Exception as error:
-            LOG.warn('cannot reach %s. Error: %s Removing...', slave, error)
+            LOG.warning('cannot reach %s. Error: %s Removing...', slave, error)
             return False
 
 

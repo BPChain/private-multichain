@@ -11,9 +11,11 @@ from ..project_logger import set_up_logging
 
 LOG = set_up_logging(__name__)
 
+
 def get_credentials():
     user, password = read_user_and_password()
     return user, password, read_rpc_port()
+
 
 def send_credentials():
     conn = http.client.HTTPConnection('masternode', 60000)
@@ -27,6 +29,7 @@ def send_credentials():
     json_data = json.dumps(credentials)
 
     conn.request('POST', '/post', json_data, headers)
+
 
 if __name__ == '__main__':
     send_credentials()

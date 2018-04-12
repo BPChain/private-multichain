@@ -41,7 +41,7 @@ def get_node_data(chain_node, last_block_number, hostname):
     difficulty = float(chain_node.getmininginfo()['difficulty'])
     hashespersec = int(chain_node.getmininginfo()['hashespersec'])
     is_mining = 0 if hashespersec == 0 else 1  # TODO: replace with 'correct' request
-    avg_blocksize = calculate_avg_blocksize(chain_node,last_block_number)
+    avg_blocksize = calculate_avg_blocksize(chain_node, last_block_number)
     avg_blocktime, new_last_block_number = calculate_avg_blocktime(chain_node, last_block_number)
     LOG.info({difficulty, hashespersec, is_mining, avg_blocktime})
     # TODO include blockSize
