@@ -14,5 +14,5 @@ class ControllerInterface(WebSocket):
 
 
 def start_controller_server():
-    server = SimpleWebSocketServer('', 20000, ControllerInterface)
+    server = SimpleWebSocketServer('', 21000, ControllerInterface)
     server.serveforever()

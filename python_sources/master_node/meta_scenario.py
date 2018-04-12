@@ -15,9 +15,10 @@ LOG = set_up_logging(__name__)
 
 def run_scenario():
     current_slaves = []
-    current_settings = {'frequency': 10, 'payloadSize': 10}
+    current_settings = {'period': 10, 'payloadSize': 10}
     orchestrator = ScenarioOrchestrator()
-    orchestrator.issue_assets('meta', 1, 1, True)
+    orchestrator.issue_assets('meta', 10, 1, True)
+    sleep(5)
     while True:
         LOG.info(".....current slaves %s", current_slaves)
         if not SLAVES_SYNC.empty():
@@ -31,8 +32,7 @@ def run_scenario():
                 orchestrator.prepare_slaves(new_slaves)
         if not SETTINGS_SYNC.empty():
             current_settings = SETTINGS_SYNC.get()
-        # Warning Frequency is Period, dohh!
-        sleep(current_settings['frequency'])
+        sleep(current_settings['period'])
         unreachable_slaves = orchestrator.unsafe_multiple_meta_transactions(current_slaves,
                                                                             current_settings[
                                                                                 'payloadSize'])
