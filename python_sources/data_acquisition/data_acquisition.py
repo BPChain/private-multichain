@@ -1,17 +1,16 @@
 """Collect and send data to the api-server."""
 
-from configparser import ConfigParser
-import time
 import json
+import os
+import time
+from configparser import ConfigParser
 from typing import Tuple
 
 import yaml
-
-from websocket import create_connection, WebSocket
 from Savoir import Savoir
+from websocket import create_connection, WebSocket
+
 from ..project_logger import set_up_logging
-
-
 
 
 def read_user_and_password() -> Tuple[str, str]:
@@ -37,13 +36,13 @@ def connect_to_multichain() -> Savoir:
     return chain_node
 
 
-def get_node_data(chain_node, last_block_number):
+def get_node_data(chain_node, last_block_number, hostname):
     difficulty = float(chain_node.getmininginfo()['difficulty'])
     hashespersec = int(chain_node.getmininginfo()['hashespersec'])
     is_mining = 0 if hashespersec == 0 else 1  # TODO: replace with 'correct' request
     avg_blocktime, new_last_block_number = calculate_avg_blocktime(chain_node, last_block_number)
     LOG.info({difficulty, hashespersec, is_mining, avg_blocktime})
-    return {'chainName': 'multichain', 'hostId': chain_node.getaddresses()[0],
+    return {'target': hostname, 'chainName': 'multichain', 'hostId': chain_node.getaddresses()[0],
             'hashrate': hashespersec, 'gasPrice': -1,
             'avgDifficulty': difficulty, 'avgBlocktime': avg_blocktime,
             'isMining': is_mining}, new_last_block_number
@@ -81,7 +80,7 @@ def send_data(node_data):
         ws_connection = connect_to_server()
         ws_connection.send(json.dumps(node_data))
         result = ws_connection.recv()
-        LOG.critical(result)
+        LOG.info(result)
         ws_connection.close()
     # Not nice, but works for now.
     # pylint: disable=broad-except
@@ -89,12 +88,12 @@ def send_data(node_data):
         LOG.critical(exception)
 
 
-def provide_data_every(n_seconds, rpc_api):
+def provide_data_every(n_seconds, rpc_api, hostname):
     last_block_number = 0
     while True:
-        time.sleep(n_seconds)
         try:
-            node_data, last_block_number = get_node_data(rpc_api, last_block_number)
+            time.sleep(n_seconds)
+            node_data, last_block_number = get_node_data(rpc_api, last_block_number, hostname)
             LOG.info(node_data)
             send_data(node_data)
         # pylint: disable=broad-except
@@ -103,10 +102,12 @@ def provide_data_every(n_seconds, rpc_api):
 
 
 def main():
-    time.sleep(15)  # sleep so we hopefully mine a block. TODO: replace with safe implementation
-    send_period = 10
+    hostname = os.environ["TARGET_HOSTNAME"]
+    time.sleep(15)  # sleep so we hopefully mine a block. TODO: replace with safe
+    # implementation
+    send_period = 100
     rpc_api = connect_to_multichain()
-    provide_data_every(send_period, rpc_api)
+    provide_data_every(send_period, rpc_api, hostname)
 
 
 if __name__ == '__main__':
