@@ -19,8 +19,6 @@ In the docker compose setup we usually have multiple slave nodes running
 There exists only one docker file however the entrypoints for the master and slave nodes are 
 different.
 
-You have to specify the number of slave nodes a priori in ``masterEntry.sh`` and then
-scale to that number in docker compose.
 
 ##### How to run
 docker-compose up --build scale slavenode=15
