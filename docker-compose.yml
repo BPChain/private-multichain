@@ -1,8 +1,26 @@
 version: '2'
-services: 
-    masternode: 
-        build: .
-        entrypoint: /e.sh
-        stdin_open: true
-        tty: true
-        entrypoint: /masterEntry.sh
+services:
+    masternode:
+      build: .
+      stdin_open: true
+      tty: true
+      networks:
+        - multichain-net
+      ports:
+        - "21000:21000"
+      entrypoint: /masterEntry.sh
+      environment:
+        TARGET_HOSTNAME: ${HOSTNAME}
+    slavenode:
+      build: .
+      stdin_open: true
+      tty: true
+      networks:
+        - multichain-net
+      entrypoint: /slaveEntry.sh
+      environment:
+        TARGET_HOSTNAME: ${HOSTNAME}
+
+networks:
+  multichain-net:
+    driver: bridge

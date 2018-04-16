@@ -1,0 +1,14 @@
+language: python
+python:
+  - "3.6"
+sudo: enabled
+notifications:
+  email: false
+# command to install dependencies
+install:
+  - pip install -r requirements.txt
+  - pip install pylint
+# command to test
+script:
+  - pylint python_sources
+
