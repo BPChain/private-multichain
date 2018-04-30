@@ -88,7 +88,6 @@ def connect_to_server() -> WebSocket:
         uri['networking']['socketAddress'],
         timeout_in_seconds
     )
-    LOG.info({'message': 'Connection established'})
     return web_socket
 
 
@@ -96,8 +95,7 @@ def send_data(node_data):
     try:
         ws_connection = connect_to_server()
         ws_connection.send(json.dumps(node_data))
-        result = ws_connection.recv()
-        LOG.info(result)
+        ws_connection.recv()
         ws_connection.close()
     # Not nice, but works for now.
     # pylint: disable=broad-except
