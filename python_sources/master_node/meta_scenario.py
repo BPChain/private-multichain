@@ -12,6 +12,14 @@ SETTINGS_SYNC = Queue()
 
 LOG = set_up_logging(__name__)
 
+def run_scylla():
+    current_slaves = []
+    orchestrator = ScenarioOrchestrator()
+    sleep(5)  # wait for things to settle
+    orchestrator.issue_assets('meta', 10, 1, True)
+    sleep(5)
+    LOG.info('Everything is set up')
+
 
 def run_scenario():
     """I am run in a Thread, and coordinate the scenario"""

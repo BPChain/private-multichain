@@ -11,7 +11,6 @@ LOG = set_up_logging(__name__)
 
 
 
-
 def main():
     Thread(target=start_controller_server, args=[]).start()
     Thread(target=start_slave_server, args=[]).start()
