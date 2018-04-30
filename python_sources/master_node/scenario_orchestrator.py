@@ -67,7 +67,6 @@ class ScenarioOrchestrator:
                 LOG.warning("unreachable: %s", unreachable_slaves)
         return unreachable_slaves
 
-
     def issue_more(self, asset_name, quantity):
         self.synchronize_heights(self.chain_rpc)
         self.chain_rpc.issuemore(self.chain_rpc.getaddresses()[0], asset_name, quantity)

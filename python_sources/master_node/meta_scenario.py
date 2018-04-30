@@ -20,6 +20,7 @@ LOG = set_up_logging(__name__)
 
 
 def update_settings_blocking():
+    LOG.info('Waiting for new settings')
     settings = SETTINGS_SYNC.get()
     sleep(5)  # wait in case there are multiple updates
     while not SETTINGS_SYNC.empty():
@@ -34,22 +35,24 @@ def run_transactions(slave, config, repetitions):
         repetitions -= 1
         for transaction in transactions:
             if TERMINATE:
-                LOG.info('terminating thread %d', threading.get_ident())
+                LOG.info('terminating thread %s %d', config['name'], threading.get_ident())
                 return
             sleep(transaction['delta'])
             size_bytes = transaction['size']
             try:
                 filler_data = codecs.decode(b2a_hex(urandom(size_bytes)))
-                answer = slave.sendwithmetadata(slave.getaddresses()[0], {'meta': 1}, filler_data)
-                LOG.info("Transaction ID %s", answer)
+                slave.sendwithmetadata(slave.getaddresses()[0], {'meta': 1}, filler_data)
             except Exception as error:
                 LOG.warning(error)
-            LOG.info('Completed transactions in Thread %d', threading.get_ident())
+            LOG.info('Completed transaction in Thread %s %d with delta %d', config['name'],
+                     threading.get_ident(), transaction['delta'])
+        LOG.info('Finished one repetition %s left in %s', config['name'], repetitions)
     LOG.info('Finished repetitions in %s %d', config['name'], threading.get_ident())
 
 
 def run_scylla():
     current_slaves, orchestrator, settings = set_up()
+    slave_threads = []
     while True:
         try:
             LOG.info(".....current slaves %s", current_slaves)
@@ -57,15 +60,27 @@ def run_scylla():
             global TERMINATE
             configs, repetitions = update_settings_blocking()
             LOG.info(configs)
-            TERMINATE = True
             while len(current_slaves) != len(configs):
                 LOG.warning('Config and slaves are unequal')
+                sleep(10)
                 current_slaves = update_current_slaves(current_slaves, orchestrator)
+            slave_threads = terminate_threads_blocking(slave_threads)
             for slave, config in zip(current_slaves, configs):
-                TERMINATE = False
-                Thread(target=run_transactions, args=[slave, config, repetitions]).start()
+                thread = Thread(target=run_transactions, args=[slave, config, repetitions])
+                thread.start()
+                slave_threads.append(thread)
+
         except Exception as exception:
             LOG.error("---!!! Unexpected exception occurred %s", exception)
+
+
+def terminate_threads_blocking(threads: [Thread]) -> [Thread]:
+    global TERMINATE
+    TERMINATE = True
+    while any(thread.is_alive() for thread in threads):
+        sleep(2)
+    TERMINATE = False
+    return []
 
 
 def set_up():
@@ -80,6 +95,8 @@ def set_up():
 
 
 def update_current_slaves(current_slaves, orchestrator):
+    current_slaves = [slave for slave in current_slaves if is_reachable(slave)]
+    LOG.debug(current_slaves)
     if not SLAVES_SYNC.empty():
         old_slaves = current_slaves
         while not SLAVES_SYNC.empty():
@@ -89,3 +106,13 @@ def update_current_slaves(current_slaves, orchestrator):
             LOG.info("--------new slaves %s", new_slaves)
             orchestrator.prepare_slaves(new_slaves)
     return current_slaves
+
+
+def is_reachable(slave) -> bool:
+    try:
+        slave.getinfo()
+        return True
+        # pylint: disable=broad-except
+    except Exception as error:
+        LOG.warning('cannot reach %s. Error: %s Removing...', slave, error)
+        return False

@@ -43,8 +43,6 @@ def get_node_data(chain_node, last_block_number, hostname):
     is_mining = 0 if hashespersec == 0 else 1  # TODO: replace with 'correct' request
     avg_blocksize = calculate_avg_blocksize(chain_node, last_block_number)
     avg_blocktime, new_last_block_number = calculate_avg_blocktime(chain_node, last_block_number)
-    LOG.info({difficulty, hashespersec, is_mining, avg_blocktime})
-    # TODO include blockSize
     return {'target': hostname, 'chainName': 'multichain', 'hostId': chain_node.getaddresses()[0],
             'hashrate': hashespersec, 'blockSize': avg_blocksize,
             'avgDifficulty': difficulty, 'avgBlocktime': avg_blocktime,
@@ -56,7 +54,6 @@ def calculate_avg_blocksize(chain_node, last_block_number) -> float:
     if last_block_number < newest_block_number:
         sizes = [chain_node.getblock(str(block_number))['size'] for block_number in
                  range(last_block_number, newest_block_number + 1)]
-        LOG.info('!!!--------Sizes %s', sizes)
         return mean(sizes)
     else:
         if last_block_number == 0:

@@ -4,7 +4,7 @@ to control them """
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer, HTTPStatus
 from Savoir import Savoir
-from .meta_scenario import SLAVES_SYNC
+from .meta_scenario import SLAVES_SYNC, is_reachable
 
 from ..project_logger import set_up_logging
 
@@ -26,7 +26,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     def add_slave_nodes(self, credentials):
         # pylint: disable=global-statement
         global _SLAVE_NODES
-        unreachables = [slave for slave in _SLAVE_NODES if not self.is_reachable(slave)]
+        unreachables = [slave for slave in _SLAVE_NODES if not is_reachable(slave)]
         user = credentials['user']
         password = credentials['password']
         host = credentials['host']
@@ -36,15 +36,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         LOG.info("Added connection to slave %d", len(_SLAVE_NODES))
         LOG.info(_SLAVE_NODES)
         SLAVES_SYNC.put(_SLAVE_NODES)
-
-    def is_reachable(self, slave: Savoir):
-        try:
-            slave.getinfo()
-            return True
-        # pylint: disable=broad-except
-        except Exception as error:
-            LOG.warning('cannot reach %s. Error: %s Removing...', slave, error)
-            return False
 
 
 def start_slave_server():
