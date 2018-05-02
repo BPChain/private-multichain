@@ -29,36 +29,9 @@ def update_settings_blocking():
         settings = SETTINGS_SYNC.get()
     return settings['nodes'], settings['repetitions']
 
-
-def run_transactions(slave, config, repetitions):
-    """Publish desired amount of data defined in config to root stream"""
-    LOG.info('Started transactions in Thread %s id: %d', config['name'], threading.get_ident())
-    transactions = config['transactions']
-    while repetitions > 0:
-        repetitions -= 1
-        for transaction in transactions:
-            if TERMINATE:
-                LOG.info('terminating thread %s %d', config['name'], threading.get_ident())
-                return
-            sleep(transaction['delta'])
-            size_bytes = transaction['size']
-            quantity = transaction['quantity']
-            for _ in range(quantity):
-                try:
-                    filler_data = codecs.decode(b2a_hex(urandom(size_bytes)))
-                    slave.publish('root', config['name'], filler_data)
-                except Exception as error:
-                    LOG.warning(error)
-                LOG.info('Completed transaction in Thread %s %d with delta %d', config['name'],
-                         threading.get_ident(), transaction['delta'])
-        LOG.info('Finished one repetition %s left in %s', config['name'], repetitions)
-    LOG.info('Finished repetitions in %s %d', config['name'], threading.get_ident())
-
-
 def run_scenario():
-    """Create new thread for each slavenode that has to run a transaction"""
     current_slaves, orchestrator = set_up()
-    slave_threads = []
+    current_scenario = Scenario()
     while True:
         try:
             LOG.info(".....current slaves %s", current_slaves)
@@ -70,23 +43,11 @@ def run_scenario():
                 LOG.warning('Config and slaves are unequal, updating...')
                 current_slaves = update_current_slaves(current_slaves, orchestrator)
                 sleep(5)
-            slave_threads = terminate_threads_blocking(slave_threads)
-            for slave, config in zip(current_slaves, configs):
-                thread = Thread(target=run_transactions, args=[slave, config, repetitions])
-                thread.start()
-                slave_threads.append(thread)
+            current_scenario.stop()
+            current_scenario = Scenario().start(current_slaves, configs, repetitions)
 
         except Exception as exception:
             LOG.error("---!!! Unexpected exception occurred %s", exception)
-
-
-def terminate_threads_blocking(threads: [Thread]) -> [Thread]:
-    global TERMINATE
-    TERMINATE = True
-    while any(thread.is_alive() for thread in threads):
-        sleep(2)
-    TERMINATE = False
-    return []
 
 
 def set_up():
@@ -121,3 +82,42 @@ def is_reachable(slave) -> bool:
     except Exception as error:
         LOG.warning('cannot reach %s. Error: %s Removing...', slave, error)
         return False
+
+
+class Scenario:
+    def __init__(self):
+        self.is_running = False
+
+    def __run_transactions(self, slave, config, repetitions):
+        """Publish desired amount of data defined in config to root stream"""
+        LOG.info('Started transactions in Thread %s id: %d', config['name'], threading.get_ident())
+        transactions = config['transactions']
+        while repetitions > 0:
+            repetitions -= 1
+            for transaction in transactions:
+                sleep(transaction['delta'])
+                if not self.is_running:
+                    LOG.info('terminating thread %s %d', config['name'], threading.get_ident())
+                    return
+                size_bytes = transaction['size']
+                quantity = transaction['quantity']
+                for _ in range(quantity):
+                    try:
+                        filler_data = codecs.decode(b2a_hex(urandom(size_bytes)))
+                        slave.publish('root', config['name'], filler_data)
+                    except Exception as error:
+                        LOG.warning(error)
+                    LOG.info('Completed transaction in Thread %s %d with delta %d', config['name'],
+                             threading.get_ident(), transaction['delta'])
+            LOG.info('Finished one repetition %s left in %s', config['name'], repetitions)
+        LOG.info('Finished repetitions in %s %d', config['name'], threading.get_ident())
+
+    def start(self, current_slaves, configs, repetitions):
+        self.is_running = True
+        for slave, config in zip(current_slaves, configs):
+            thread = Thread(target=self.__run_transactions, args=[slave, config, repetitions])
+            thread.start()
+        return self
+
+    def stop(self):
+        self.is_running = False
