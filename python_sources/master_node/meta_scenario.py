@@ -63,9 +63,9 @@ def run_scylla():
             configs, repetitions = update_settings_blocking()
             LOG.info(configs)
             while len(current_slaves) != len(configs):
-                LOG.warning('Config and slaves are unequal')
-                sleep(10)
+                LOG.warning('Config and slaves are unequal, updating...')
                 current_slaves = update_current_slaves(current_slaves, orchestrator)
+                sleep(5)
             slave_threads = terminate_threads_blocking(slave_threads)
             for slave, config in zip(current_slaves, configs):
                 thread = Thread(target=run_transactions, args=[slave, config, repetitions])
