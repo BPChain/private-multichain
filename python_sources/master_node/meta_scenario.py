@@ -43,7 +43,7 @@ def run_transactions(slave, config, repetitions):
             for _ in range(quantity):
                 try:
                     filler_data = codecs.decode(b2a_hex(urandom(size_bytes)))
-                    slave.sendwithmetadata(slave.getaddresses()[0], {'meta': 1}, filler_data)
+                    slave.publish('root', config['name'], filler_data)
                 except Exception as error:
                     LOG.warning(error)
                 LOG.info('Completed transaction in Thread %s %d with delta %d', config['name'],
