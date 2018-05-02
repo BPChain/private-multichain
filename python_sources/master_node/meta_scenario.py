@@ -1,16 +1,18 @@
 """I offer a function that is run in a Thread to orchestrate the nodes"""
 import codecs
 import threading
+from threading import Thread
+
 from binascii import b2a_hex
 from os import urandom
 from queue import Queue
-from threading import Thread
 from time import sleep
 
 from .scenario_orchestrator import ScenarioOrchestrator
 from ..project_logger import set_up_logging
 
 # pylint: disable=broad-except
+# pylint: disable=global-statement
 
 SLAVES_SYNC = Queue()
 SETTINGS_SYNC = Queue()
@@ -29,6 +31,7 @@ def update_settings_blocking():
 
 
 def run_transactions(slave, config, repetitions):
+    """Publish desired amount of data defined in config to root stream"""
     LOG.info('Started transactions in Thread %s id: %d', config['name'], threading.get_ident())
     transactions = config['transactions']
     while repetitions > 0:
@@ -43,7 +46,7 @@ def run_transactions(slave, config, repetitions):
             for _ in range(quantity):
                 try:
                     filler_data = codecs.decode(b2a_hex(urandom(size_bytes)))
-                    slave.sendwithmetadata(slave.getaddresses()[0], {'meta': 1}, filler_data)
+                    slave.publish('root', config['name'], filler_data)
                 except Exception as error:
                     LOG.warning(error)
                 LOG.info('Completed transaction in Thread %s %d with delta %d', config['name'],
@@ -52,8 +55,9 @@ def run_transactions(slave, config, repetitions):
     LOG.info('Finished repetitions in %s %d', config['name'], threading.get_ident())
 
 
-def run_scylla():
-    current_slaves, orchestrator, settings = set_up()
+def run_scenario():
+    """Create new thread for each slavenode that has to run a transaction"""
+    current_slaves, orchestrator = set_up()
     slave_threads = []
     while True:
         try:
@@ -92,8 +96,7 @@ def set_up():
     orchestrator.issue_assets('meta', 10, 1, True)
     sleep(5)
     LOG.info('Everything is set up')
-    settings = {'repetitions': 0, 'nodes': []}
-    return current_slaves, orchestrator, settings
+    return current_slaves, orchestrator
 
 
 def update_current_slaves(current_slaves, orchestrator):
