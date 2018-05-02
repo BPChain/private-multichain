@@ -1,10 +1,11 @@
 """I offer a function that is run in a Thread to orchestrate the nodes"""
 import codecs
 import threading
+from threading import Thread
+
 from binascii import b2a_hex
 from os import urandom
 from queue import Queue
-from threading import Thread
 from time import sleep
 
 from .scenario_orchestrator import ScenarioOrchestrator
