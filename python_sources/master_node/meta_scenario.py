@@ -4,8 +4,8 @@ import threading
 from binascii import b2a_hex
 from os import urandom
 from queue import Queue
-from time import sleep
 from threading import Thread
+from time import sleep
 
 from .scenario_orchestrator import ScenarioOrchestrator
 from ..project_logger import set_up_logging
@@ -31,7 +31,7 @@ def update_settings_blocking():
 def run_transactions(slave, config, repetitions):
     LOG.info('Started transactions in Thread %s id: %d', config['name'], threading.get_ident())
     transactions = config['transactions']
-    while repetitions >= 0:
+    while repetitions > 0:
         repetitions -= 1
         for transaction in transactions:
             if TERMINATE:
@@ -39,13 +39,15 @@ def run_transactions(slave, config, repetitions):
                 return
             sleep(transaction['delta'])
             size_bytes = transaction['size']
-            try:
-                filler_data = codecs.decode(b2a_hex(urandom(size_bytes)))
-                slave.sendwithmetadata(slave.getaddresses()[0], {'meta': 1}, filler_data)
-            except Exception as error:
-                LOG.warning(error)
-            LOG.info('Completed transaction in Thread %s %d with delta %d', config['name'],
-                     threading.get_ident(), transaction['delta'])
+            quantity = transaction['quantity']
+            for _ in range(quantity):
+                try:
+                    filler_data = codecs.decode(b2a_hex(urandom(size_bytes)))
+                    slave.sendwithmetadata(slave.getaddresses()[0], {'meta': 1}, filler_data)
+                except Exception as error:
+                    LOG.warning(error)
+                LOG.info('Completed transaction in Thread %s %d with delta %d', config['name'],
+                         threading.get_ident(), transaction['delta'])
         LOG.info('Finished one repetition %s left in %s', config['name'], repetitions)
     LOG.info('Finished repetitions in %s %d', config['name'], threading.get_ident())
 
