@@ -18,19 +18,26 @@ def get_credentials():
 
 
 def send_credentials():
-    conn = http.client.HTTPConnection('masternode', 60000)
-    headers = {'Content-type': 'application/json',
-               'Accept': 'application/json'}
-    user, password, rpc_port = get_credentials()
-    credentials = {'user': user,
-                   'password': password,
-                   'host': socket.gethostbyname(socket.gethostname()),
-                   'rpc_port': rpc_port}
-    json_data = json.dumps(credentials)
-
-    conn.request('POST', '/post', json_data, headers)
+    credentials_sent = False
+    while not credentials_sent:
+        try:
+            conn = http.client.HTTPConnection('masternode', 60000)
+            headers = {'Content-type': 'application/json',
+                       'Accept': 'application/json'}
+            user, password, rpc_port = get_credentials()
+            credentials = {'user': user,
+                           'password': password,
+                           'host': socket.gethostbyname(socket.gethostname()),
+                           'rpc_port': rpc_port}
+            json_data = json.dumps(credentials)
+            conn.request('POST', '/post', json_data, headers)
+            credentials_sent = True
+        except Exception as error:
+            LOG.error(error)
+            sleep(5)
 
 
 if __name__ == '__main__':
+
     send_credentials()
     sleep(60)
