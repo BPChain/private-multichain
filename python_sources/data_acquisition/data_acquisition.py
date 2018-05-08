@@ -6,6 +6,7 @@ import time
 from configparser import ConfigParser
 from typing import Tuple
 from statistics import mean
+from time import sleep
 
 import yaml
 from Savoir import Savoir
@@ -123,5 +124,6 @@ def main():
 
 
 if __name__ == '__main__':
+    sleep(300000)
     LOG = set_up_logging(__name__)
     main()

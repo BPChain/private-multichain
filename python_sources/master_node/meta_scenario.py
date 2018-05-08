@@ -8,7 +8,6 @@ from os import urandom
 from queue import Queue
 from time import sleep
 
-from .scenario_orchestrator import ScenarioOrchestrator
 from ..project_logger import set_up_logging
 
 # pylint: disable=broad-except
@@ -29,19 +28,20 @@ def update_settings_blocking():
         settings = SETTINGS_SYNC.get()
     return settings['nodes'], settings['repetitions']
 
+
 def run_scenario():
-    current_slaves, orchestrator = set_up()
+    current_slaves = []
     current_scenario = Scenario()
     while True:
         try:
             LOG.info(".....current slaves %s", current_slaves)
-            current_slaves = update_current_slaves(current_slaves, orchestrator)
+            current_slaves = update_current_slaves(current_slaves)
             global TERMINATE
             configs, repetitions = update_settings_blocking()
             LOG.info(configs)
             while len(current_slaves) != len(configs):
-                LOG.warning('Config and slaves are unequal, updating...')
-                current_slaves = update_current_slaves(current_slaves, orchestrator)
+                LOG.warning('Config and slaves are unequal, udating...')
+                current_slaves = update_current_slaves(current_slaves)
                 sleep(5)
             current_scenario.stop()
             current_scenario = Scenario().start(current_slaves, configs, repetitions)
@@ -50,38 +50,14 @@ def run_scenario():
             LOG.error("---!!! Unexpected exception occurred %s", exception)
 
 
-def set_up():
-    current_slaves = []
-    orchestrator = ScenarioOrchestrator()
-    sleep(5)  # wait for things to settle
-    orchestrator.issue_assets('meta', 10, 1, True)
-    sleep(5)
-    LOG.info('Everything is set up')
-    return current_slaves, orchestrator
-
-
-def update_current_slaves(current_slaves, orchestrator):
-    current_slaves = [slave for slave in current_slaves if is_reachable(slave)]
+def update_current_slaves(current_slaves):
+    current_slaves = [slave for slave in current_slaves if slave.is_alive()]
     LOG.debug(current_slaves)
     if not SLAVES_SYNC.empty():
-        old_slaves = current_slaves
         while not SLAVES_SYNC.empty():
             current_slaves = SLAVES_SYNC.get()
-        new_slaves = set(current_slaves) - set(old_slaves)
-        if new_slaves:
-            LOG.info("--------new slaves %s", new_slaves)
-            orchestrator.prepare_slaves(new_slaves)
     return current_slaves
 
-
-def is_reachable(slave) -> bool:
-    try:
-        slave.getinfo()
-        return True
-        # pylint: disable=broad-except
-    except Exception as error:
-        LOG.warning('cannot reach %s. Error: %s Removing...', slave, error)
-        return False
 
 
 class Scenario:
@@ -104,7 +80,7 @@ class Scenario:
                 for _ in range(quantity):
                     try:
                         filler_data = codecs.decode(b2a_hex(urandom(size_bytes)))
-                        slave.publish('root', config['name'], filler_data)
+                        slave.transact(config['name'], filler_data)
                     except Exception as error:
                         LOG.warning(error)
                     LOG.info('Completed transaction in Thread %s %d with delta %d', config['name'],

@@ -3,14 +3,16 @@ to control them """
 
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer, HTTPStatus
-from Savoir import Savoir
-from .meta_scenario import SLAVES_SYNC, is_reachable
+
+from python_sources.implementation.Setup import Setup
+from .meta_scenario import SLAVES_SYNC
+from python_sources.implementation.Slave import Slave
 
 from ..project_logger import set_up_logging
 
 LOG = set_up_logging(__name__)
 _SLAVE_NODES = []
-
+SETUP = Setup()
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     """I handle requests form the slaves who send their user data"""
@@ -21,18 +23,15 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         body = self.rfile.read(content_length)
         self.send_response(HTTPStatus.OK)
         self.end_headers()
-        self.add_slave_nodes(json.loads(body.decode('utf-8')))
+        print(body)
+        config = json.loads(body.decode('utf-8'))
+        self.add_slave_nodes(config)
 
-    def add_slave_nodes(self, credentials):
+    def add_slave_nodes(self, config):
         # pylint: disable=global-statement
         global _SLAVE_NODES
-        unreachables = [slave for slave in _SLAVE_NODES if not is_reachable(slave)]
-        user = credentials['user']
-        password = credentials['password']
-        host = credentials['host']
-        rpc_port = credentials['rpc_port']
-        chain_node = Savoir(user, password, host, rpc_port, "bpchain")
-        _SLAVE_NODES = [slave for slave in _SLAVE_NODES if slave not in unreachables] + [chain_node]
+        _SLAVE_NODES = [slave for slave in _SLAVE_NODES if slave.is_alive()] + \
+                       [Slave.get_new(config, SETUP)]
         LOG.info("Added connection to slave %d", len(_SLAVE_NODES))
         LOG.info(_SLAVE_NODES)
         SLAVES_SYNC.put(_SLAVE_NODES)
@@ -40,5 +39,5 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
 def start_slave_server():
     LOG.info("Masternode is ready for connections")
-    httpd = HTTPServer(('masternode', 60000), SimpleHTTPRequestHandler)
+    httpd = HTTPServer(('', 60000), SimpleHTTPRequestHandler)
     httpd.serve_forever()
