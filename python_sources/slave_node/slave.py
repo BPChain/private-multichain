@@ -38,6 +38,6 @@ def send_credentials():
 
 
 if __name__ == '__main__':
-
+    sleep(10)
     send_credentials()
     sleep(60)

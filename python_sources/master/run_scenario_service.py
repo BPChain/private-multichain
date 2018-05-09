@@ -4,8 +4,8 @@ from ..implementation.Slave import Slave
 from time import sleep
 
 if __name__ == '__main__':
-    sleep(7)
+    sleep(10)
     print('-----------starting')
-    orchestrate(Setup(), 21000, Slave)
+    orchestrate(21000, Slave, Setup())
     print('-----------started')
 
