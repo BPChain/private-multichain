@@ -3,6 +3,7 @@
 import json
 import os
 import time
+import psutil
 from configparser import ConfigParser
 from typing import Tuple
 from statistics import mean
@@ -47,7 +48,7 @@ def get_node_data(chain_node, last_block_number, hostname):
     return {'target': hostname, 'chainName': 'multichain', 'hostId': chain_node.getaddresses()[0],
             'hashrate': hashespersec, 'blockSize': avg_blocksize,
             'avgDifficulty': difficulty, 'avgBlocktime': avg_blocktime,
-            'isMining': is_mining}, new_last_block_number
+            'isMining': is_mining, 'cpuUsage': psutil.cpu_percent()}, new_last_block_number
 
 
 def calculate_avg_blocksize(chain_node, last_block_number) -> float:
@@ -124,6 +125,6 @@ def main():
 
 
 if __name__ == '__main__':
-    sleep(300000)
+    sleep(20)
     LOG = set_up_logging(__name__)
     main()
