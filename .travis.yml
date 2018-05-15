@@ -6,6 +6,7 @@ notifications:
   email: false
 # command to install dependencies
 install:
+  - pip install git+https://github.com/BPChain/scenario-orchestration-service.git
   - pip install -r requirements.txt
   - pip install pylint
 # command to test
