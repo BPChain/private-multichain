@@ -3,12 +3,11 @@
 import json
 import os
 import time
-import psutil
 from configparser import ConfigParser
-from typing import Tuple
 from statistics import mean
-from time import sleep
+from typing import Tuple
 
+import psutil
 import yaml
 from Savoir import Savoir
 from websocket import create_connection, WebSocket
@@ -125,6 +124,6 @@ def main():
 
 
 if __name__ == '__main__':
-    sleep(20)
+    time.sleep(20)
     LOG = set_up_logging(__name__)
     main()
