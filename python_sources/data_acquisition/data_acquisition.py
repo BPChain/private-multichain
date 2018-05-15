@@ -4,9 +4,10 @@ import json
 import os
 import time
 from configparser import ConfigParser
-from typing import Tuple
 from statistics import mean
+from typing import Tuple
 
+import psutil
 import yaml
 from Savoir import Savoir
 from websocket import create_connection, WebSocket
@@ -43,12 +44,10 @@ def get_node_data(chain_node, last_block_number, hostname):
     is_mining = 0 if hashespersec == 0 else 1  # TODO: replace with 'correct' request
     avg_blocksize = calculate_avg_blocksize(chain_node, last_block_number)
     avg_blocktime, new_last_block_number = calculate_avg_blocktime(chain_node, last_block_number)
-    LOG.info({difficulty, hashespersec, is_mining, avg_blocktime})
-    # TODO include blockSize
     return {'target': hostname, 'chainName': 'multichain', 'hostId': chain_node.getaddresses()[0],
             'hashrate': hashespersec, 'blockSize': avg_blocksize,
             'avgDifficulty': difficulty, 'avgBlocktime': avg_blocktime,
-            'isMining': is_mining}, new_last_block_number
+            'isMining': is_mining, 'cpuUsage': psutil.cpu_percent()}, new_last_block_number
 
 
 def calculate_avg_blocksize(chain_node, last_block_number) -> float:
@@ -56,7 +55,6 @@ def calculate_avg_blocksize(chain_node, last_block_number) -> float:
     if last_block_number < newest_block_number:
         sizes = [chain_node.getblock(str(block_number))['size'] for block_number in
                  range(last_block_number, newest_block_number + 1)]
-        LOG.info('!!!--------Sizes %s', sizes)
         return mean(sizes)
     else:
         if last_block_number == 0:
@@ -88,7 +86,6 @@ def connect_to_server() -> WebSocket:
         uri['networking']['socketAddress'],
         timeout_in_seconds
     )
-    LOG.info({'message': 'Connection established'})
     return web_socket
 
 
@@ -96,8 +93,7 @@ def send_data(node_data):
     try:
         ws_connection = connect_to_server()
         ws_connection.send(json.dumps(node_data))
-        result = ws_connection.recv()
-        LOG.info(result)
+        ws_connection.recv()
         ws_connection.close()
     # Not nice, but works for now.
     # pylint: disable=broad-except
@@ -128,5 +124,6 @@ def main():
 
 
 if __name__ == '__main__':
+    time.sleep(20)
     LOG = set_up_logging(__name__)
     main()
