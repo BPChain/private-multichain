@@ -8,7 +8,6 @@ from ..implementation.setup import Setup
 from ..implementation.slave import Slave
 
 if __name__ == '__main__':
-    sleep(10)
     print('-----------starting')
     orchestrate(21000, Slave, Setup())
     print('-----------started')
