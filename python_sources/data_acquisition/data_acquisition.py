@@ -1,4 +1,5 @@
 """Collect and send data to the api-server."""
+# pylint: disable=broad-except, global-statement
 
 import json
 import os
@@ -13,6 +14,8 @@ from Savoir import Savoir
 from websocket import create_connection, WebSocket
 
 from ..project_logger import set_up_logging
+
+PROCESSES = []
 
 
 def read_user_and_password() -> Tuple[str, str]:
@@ -38,6 +41,10 @@ def connect_to_multichain() -> Savoir:
     return chain_node
 
 
+def cpu_usage():
+    return sum(process.cpu_percent() for process in PROCESSES) / psutil.cpu_count()
+
+
 def get_node_data(chain_node, last_block_number, hostname):
     difficulty = float(chain_node.getmininginfo()['difficulty'])
     hashespersec = int(chain_node.getmininginfo()['hashespersec'])
@@ -47,7 +54,7 @@ def get_node_data(chain_node, last_block_number, hostname):
     return {'target': hostname, 'chainName': 'multichain', 'hostId': chain_node.getaddresses()[0],
             'hashrate': hashespersec, 'blockSize': avg_blocksize,
             'avgDifficulty': difficulty, 'avgBlocktime': avg_blocktime,
-            'isMining': is_mining, 'cpuUsage': psutil.cpu_percent()}, new_last_block_number
+            'isMining': is_mining, 'cpuUsage': cpu_usage()}, new_last_block_number
 
 
 def calculate_avg_blocksize(chain_node, last_block_number) -> float:
@@ -95,8 +102,6 @@ def send_data(node_data):
         ws_connection.send(json.dumps(node_data))
         ws_connection.recv()
         ws_connection.close()
-    # Not nice, but works for now.
-    # pylint: disable=broad-except
     except Exception as exception:
         LOG.critical(exception)
 
@@ -109,15 +114,15 @@ def provide_data_every(n_seconds, rpc_api, hostname):
             node_data, last_block_number = get_node_data(rpc_api, last_block_number, hostname)
             LOG.info(node_data)
             send_data(node_data)
-        # pylint: disable=broad-except
         except Exception as exception:
             LOG.error(exception)
 
 
 def main():
     hostname = os.environ["TARGET_HOSTNAME"]
-    time.sleep(15)  # sleep so we hopefully mine a block. TODO: replace with safe
-    # implementation
+    time.sleep(15)  # sleep so we hopefully mined a block.
+    global PROCESSES
+    PROCESSES = list(psutil.process_iter())
     send_period = 15
     rpc_api = connect_to_multichain()
     provide_data_every(send_period, rpc_api, hostname)
