@@ -16,7 +16,6 @@ from websocket import create_connection, WebSocket
 from ..project_logger import set_up_logging
 
 
-
 def read_user_and_password() -> Tuple[str, str]:
     conf_string = '[conf]\n' + open('/root/.multichain/bpchain/multichain.conf').read()
     parser = ConfigParser()
@@ -42,7 +41,7 @@ def connect_to_multichain() -> Savoir:
 
 def cpu_usage():
     return sum([p.cpu_percent() for p in psutil.process_iter()
-                if 'geth' in p.info['name']]) / psutil.cpu_count()
+                if 'multichaind' in p.info['name']]) / psutil.cpu_count()
 
 
 def get_node_data(chain_node, last_block_number, hostname):
