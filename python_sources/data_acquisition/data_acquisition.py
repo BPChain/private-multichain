@@ -41,7 +41,7 @@ def connect_to_multichain() -> Savoir:
 
 def cpu_usage():
     return sum([p.cpu_percent() for p in psutil.process_iter()
-                if 'multichaind' in p.info['name']]) / psutil.cpu_count()
+                if 'multichaind' in p.name()]) / psutil.cpu_count()
 
 
 def get_node_data(chain_node, last_block_number, hostname):
