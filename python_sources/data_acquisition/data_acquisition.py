@@ -15,7 +15,6 @@ from websocket import create_connection, WebSocket
 
 from ..project_logger import set_up_logging
 
-PROCESSES = []
 
 
 def read_user_and_password() -> Tuple[str, str]:
@@ -42,7 +41,8 @@ def connect_to_multichain() -> Savoir:
 
 
 def cpu_usage():
-    return sum(process.cpu_percent() for process in PROCESSES) / psutil.cpu_count()
+    return sum([p.cpu_percent() for p in psutil.process_iter()
+                if 'geth' in p.info['name']]) / psutil.cpu_count()
 
 
 def get_node_data(chain_node, last_block_number, hostname):
@@ -121,8 +121,6 @@ def provide_data_every(n_seconds, rpc_api, hostname):
 def main():
     hostname = os.environ["TARGET_HOSTNAME"]
     time.sleep(15)  # sleep so we hopefully mined a block.
-    global PROCESSES
-    PROCESSES = list(psutil.process_iter())
     send_period = 15
     rpc_api = connect_to_multichain()
     provide_data_every(send_period, rpc_api, hostname)
