@@ -1,19 +1,9 @@
-"""Collect and send data to the api-server."""
-# pylint: disable=broad-except, global-statement
+"""Connect to rpc server of multichain node"""
 
-import json
-import os
-import time
 from configparser import ConfigParser
-from statistics import mean
 from typing import Tuple
 
-import psutil
-import yaml
 from Savoir import Savoir
-from websocket import create_connection, WebSocket
-
-from ..project_logger import set_up_logging
 
 
 def read_user_and_password() -> Tuple[str, str]:

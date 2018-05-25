@@ -4,7 +4,7 @@ from json import JSONDecodeError
 from time import sleep
 from bp_orchestrator import AbstractSetup
 
-from python_sources.data_acquisition.data_acquisition import connect_to_multichain
+from python_sources.data_acquisition.multichain_connector import connect_to_multichain
 from python_sources.project_logger import set_up_logging
 
 LOG = set_up_logging(__name__)
