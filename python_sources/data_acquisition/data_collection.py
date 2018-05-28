@@ -1,3 +1,4 @@
+"""I collect data from multichain and send it to the server"""
 import sys
 from time import sleep
 

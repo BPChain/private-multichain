@@ -1,5 +1,4 @@
-from typing import Tuple, List
-
+"""I provide an Adapter for the Multichain api"""
 from statistics_reader.block import Block
 from statistics_reader.blockchain_adapter import BlockchainAdapter
 
@@ -7,6 +6,8 @@ from python_sources.data_acquisition.multichain_connector import connect_to_mult
 
 
 class MultichainAdapter(BlockchainAdapter):
+    """I am an Adapter for the Multichain api"""
+
     def __init__(self, is_miner):
         super().__init__(is_miner)
         self.rpc_client = connect_to_multichain()
