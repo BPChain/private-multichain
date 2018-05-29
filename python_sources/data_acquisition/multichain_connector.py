@@ -27,5 +27,3 @@ def connect_to_multichain() -> Savoir:
     chain_name = 'bpchain'
     chain_node = Savoir(user, password, rpc_host, rpc_port, chain_name)
     return chain_node
-
-
