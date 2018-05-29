@@ -1,4 +1,2 @@
-networking:
-  socketProtocol: "wss://"
-  socketAddress: "bpt-lab.org/bp2017w1-backendlistener"
+serverAddress: "https://bpt-lab.org/bp2017w1-bpchain/chain/private/multichain"
 
