@@ -2,6 +2,7 @@
 
 from json import JSONDecodeError
 from time import sleep
+
 from bp_orchestrator import AbstractSetup
 
 from python_sources.data_acquisition.multichain_connector import connect_to_multichain
@@ -11,7 +12,8 @@ LOG = set_up_logging(__name__)
 
 
 class Setup(AbstractSetup):
-    """I provide basic setup for the scenario and the slaves with regards to multichain"""
+    """I provide basic setup such as rights management and stream creation for the scenario and the
+    slaves"""
 
     def __init__(self):
         super().__init__()
