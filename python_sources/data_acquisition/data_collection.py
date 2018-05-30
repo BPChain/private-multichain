@@ -3,7 +3,6 @@ import sys
 from time import sleep
 
 import yaml
-from statistics_reader.blockchain_reader import BlockchainReader
 from statistics_reader.sender import Sender
 
 from python_sources.data_acquisition.multichian_adapter import MultichainAdapter
