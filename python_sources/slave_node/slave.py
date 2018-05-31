@@ -6,7 +6,7 @@ import json
 import socket
 from time import sleep
 
-from ..data_acquisition.data_acquisition import read_user_and_password, read_rpc_port
+from ..data_acquisition.multichain_connector import read_user_and_password, read_rpc_port
 from ..project_logger import set_up_logging
 
 LOG = set_up_logging(__name__)
