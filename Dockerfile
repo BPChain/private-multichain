@@ -6,7 +6,7 @@ RUN cd /tmp && tar -xvzf multichain-1.0.4.tar.gz
 RUN cd /tmp/multichain-1.0.4 && mv multichaind multichain-cli multichain-util /usr/local/bin
 RUN rm -rf /tmp/multichain*
 COPY requirements.txt /
-RUN pip3 install git+git://github.com/BPChain/scenario-orchestration-service.git@v0.9
+RUN pip3 install git+git://github.com/BPChain/scenario-orchestration-service.git@v1.0
 RUN pip3 install git+git://github.com/BPChain/blockchain_statistics_readout.git@v1.2
 RUN pip3 install -r /requirements.txt
 COPY python_sources /python_sources
